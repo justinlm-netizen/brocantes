@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Brocanteur — Brocantes & vide-greniers de France</title>
-<meta name="theme-color" content="#b5651d">
+<meta name="theme-color" content="#1a5c3c">
 <meta name="description" content="Toutes les brocantes, vide-greniers et braderies de France : carte, calendrier, distances et temps de trajet depuis chez vous.">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -17,9 +17,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css">
 <style>
 :root{
-  --bg:#f7f3ec; --card:#ffffff; --ink:#2b2622; --muted:#7d746a; --line:#e7ded2;
-  --accent:#b5651d; --accent-d:#8f4d13; --red:#e63946;
-  --c-vg:#2a7de1; --c-br:#b5651d; --c-vm:#7a8b99; --c-bd:#6a4c93; --c-bo:#2a9d8f; --c-au:#9a8f80;
+  --bg:#f3f6f4; --card:#ffffff; --ink:#1e2622; --muted:#67766c; --line:#dbe5df;
+  --accent:#1a5c3c; --accent-d:#0d3d27; --red:#e63946;
+  --c-vg:#2a7de1; --c-br:#cf7a17; --c-vm:#7a8b99; --c-bd:#6a4c93; --c-bo:#2a9d8f; --c-au:#9a8f80;
   --shadow:0 1px 3px rgba(60,45,25,.08),0 6px 18px rgba(60,45,25,.06);
 }
 *{box-sizing:border-box}
@@ -30,7 +30,7 @@ a{color:inherit}
 button{font-family:inherit;cursor:pointer}
 .app{display:flex;flex-direction:column;height:100%}
 
-header{background:linear-gradient(135deg,#8f4d13,#b5651d);color:#fff;padding:11px 16px;box-shadow:var(--shadow);z-index:30}
+header{background:linear-gradient(135deg,#0d3d27,#1a5c3c);color:#fff;padding:11px 16px;box-shadow:var(--shadow);z-index:30}
 .hrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .brand{font-weight:800;font-size:19px;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
 .brand .logo{font-size:21px}
@@ -39,26 +39,28 @@ header{background:linear-gradient(135deg,#8f4d13,#b5651d);color:#fff;padding:11p
   border:1px solid rgba(255,255,255,.25);padding:5px 10px;border-radius:999px;font-size:13px}
 .origin-pill button{background:none;border:none;color:#fff;text-decoration:underline;font-size:12px;opacity:.9}
 .origin-pill button:hover{opacity:1}
+.lbl-icon{display:none;font-size:15px;text-decoration:none}
+.daytag .dt-short{display:none}
 
 .body{flex:1;display:flex;min-height:0}
 .filters{width:280px;flex-shrink:0;background:var(--card);border-right:1px solid var(--line);padding:16px;overflow-y:auto}
 .filters h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}
 .fgroup{margin-bottom:18px}
-.search{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#fbf8f3}
+.search{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#f0f5f2}
 .search:focus{outline:2px solid var(--accent);border-color:transparent}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--line);background:#fbf8f3;border-radius:999px;padding:5px 11px;font-size:12.5px;display:flex;align-items:center;gap:6px;user-select:none;transition:.12s}
+.chip{border:1px solid var(--line);background:#f0f5f2;border-radius:999px;padding:5px 11px;font-size:12.5px;display:flex;align-items:center;gap:6px;user-select:none;transition:.12s}
 .chip .dot{width:9px;height:9px;border-radius:50%}
 .chip.off{opacity:.4}
 .chip.on{border-color:var(--accent);background:#fff;box-shadow:0 0 0 1px var(--accent) inset}
 .slider-val{font-weight:700;color:var(--accent-d)}
 input[type=range]{width:100%;accent-color:var(--accent)}
 .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.seg button{flex:1;background:#fbf8f3;border:none;padding:8px 4px;font-size:12.5px;color:var(--muted);border-right:1px solid var(--line)}
+.seg button{flex:1;background:#f0f5f2;border:none;padding:8px 4px;font-size:12.5px;color:var(--muted);border-right:1px solid var(--line)}
 .seg button:last-child{border-right:none}
 .seg button.active{background:var(--accent);color:#fff;font-weight:600}
 .daterow{display:flex;gap:8px}
-.daterow input{flex:1;padding:7px;border:1px solid var(--line);border-radius:8px;background:#fbf8f3;font-size:12.5px}
+.daterow input{flex:1;padding:7px;border:1px solid var(--line);border-radius:8px;background:#f0f5f2;font-size:12.5px}
 .toggle{display:flex;align-items:center;gap:9px;font-size:13.5px;cursor:pointer;padding:4px 0}
 .toggle input{width:16px;height:16px;accent-color:var(--accent)}
 .reset{width:100%;padding:9px;border:1px dashed var(--line);background:none;border-radius:10px;color:var(--muted);font-size:13px}
@@ -69,9 +71,9 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   display:flex;align-items:center;gap:10px;background:var(--bg);flex-wrap:wrap}
 .topbar b{color:var(--ink)}
 .tbtn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 11px;font-size:12.5px;font-weight:600;color:var(--accent-d);display:inline-flex;align-items:center;gap:6px}
-.tbtn:hover{background:#f6ede0;border-color:var(--accent)}
+.tbtn:hover{background:#e6efe9;border-color:var(--accent)}
 .sortsel{margin-left:auto;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff}
-.daytag{background:#f6ede0;border:1px solid var(--accent);color:var(--accent-d);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600}
+.daytag{background:#e6efe9;border:1px solid var(--accent);color:var(--accent-d);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600}
 
 .split{flex:1;display:flex;min-height:0}
 .mapPane{flex:1.15 1 0;position:relative;display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
@@ -83,9 +85,9 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow);
   display:flex;align-items:center;gap:5px;padding:5px 7px;flex-wrap:nowrap;max-width:calc(100% - 20px)}
 .mapbar button{border:1px solid var(--line);background:#fff;border-radius:8px;height:30px;min-width:30px;padding:0 8px;color:var(--accent-d);font-size:13px;font-weight:600;flex-shrink:0;white-space:nowrap}
-.mapbar button:hover{background:#f6ede0;border-color:var(--accent)}
+.mapbar button:hover{background:#e6efe9;border-color:var(--accent)}
 .mapbar button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.mapbar input[type=date]{border:1px solid var(--line);border-radius:8px;padding:4px 5px;font-size:12.5px;background:#fbf8f3;min-width:0;height:30px}
+.mapbar input[type=date]{border:1px solid var(--line);border-radius:8px;padding:4px 5px;font-size:12.5px;background:#f0f5f2;min-width:0;height:30px}
 .mapbar .ico{font-size:15px}
 
 .legend{position:absolute;bottom:12px;left:12px;background:rgba(255,255,255,.95);border:1px solid var(--line);
@@ -97,7 +99,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .recenter{position:absolute;bottom:14px;right:14px;z-index:900;width:44px;height:44px;border-radius:50%;
   background:#fff;border:1px solid var(--line);box-shadow:0 3px 10px rgba(60,45,25,.25);font-size:20px;
   display:flex;align-items:center;justify-content:center;color:var(--red);line-height:1}
-.recenter:hover{background:#f6ede0;border-color:var(--accent)}
+.recenter:hover{background:#e6efe9;border-color:var(--accent)}
 
 /* selection info bar over map */
 .selinfo{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:900;width:calc(100% - 24px);max-width:520px;
@@ -111,7 +113,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .selinfo .si-acts a{flex:1;text-align:center;text-decoration:none;font-size:13px;font-weight:700;padding:8px;border-radius:9px;color:#fff}
 .a-waze{background:#33ccff}
 .a-maps{background:#4285F4}
-.a-src{background:#efe7db;color:#6b5b45!important}
+.a-src{background:#e6efe9;color:#3e544a!important}
 
 /* LIST */
 .daygroup{margin-bottom:16px}
@@ -126,12 +128,12 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .card .nm{font-size:12.5px;color:var(--muted);margin:0 0 8px;min-height:16px}
 .badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .badge{font-size:11px;padding:3px 8px;border-radius:999px;font-weight:600;color:#fff;white-space:nowrap}
-.badge.size{background:#efe7db;color:#6b5b45}
+.badge.size{background:#e6efe9;color:#3e544a}
 .badge.cxl{background:#c0392b}
 .meta{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
 .meta .r{display:flex;align-items:center;gap:6px}
 .meta .ic{width:14px;text-align:center;opacity:.8}
-.dist{position:absolute;top:11px;right:11px;font-size:12px;font-weight:700;color:var(--accent-d);background:#f6ede0;padding:3px 8px;border-radius:999px}
+.dist{position:absolute;top:11px;right:11px;font-size:12px;font-weight:700;color:var(--accent-d);background:#e6efe9;padding:3px 8px;border-radius:999px}
 .acts{display:flex;gap:7px;margin-top:9px}
 .acts a{flex:1;text-align:center;font-size:11.5px;text-decoration:none;padding:6px;border-radius:8px;font-weight:700;color:#fff}
 .more-note{grid-column:1/-1;text-align:center;color:var(--muted);font-size:12.5px;padding:10px;border:1px dashed var(--line);border-radius:10px}
@@ -166,16 +168,23 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .backdrop.show{display:block}
 @media(max-width:860px){
   body{overflow:hidden}
-  header{padding:7px 12px}
-  .brand{font-size:16px}
-  .brand .logo{font-size:18px}
+  header{padding:6px 12px}
+  .hrow{flex-wrap:nowrap;gap:8px;align-items:center}
+  .brand{font-size:15px;font-weight:600;flex-shrink:0}
+  .brand .logo{font-size:17px}
   .hsub{display:none}
-  .origin-pill{margin-left:auto;font-size:12px;padding:4px 9px;gap:6px}
-  .filters{position:fixed;top:0;left:0;bottom:0;z-index:60;width:84%;max-width:320px;transform:translateX(-100%);transition:.22s;box-shadow:0 0 40px rgba(0,0,0,.3)}
+  .origin-pill{margin-left:auto;font-size:11.5px;padding:3px 8px;gap:6px;min-width:0}
+  #originLabel{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:118px}
+  .lbl-full{display:none}
+  .lbl-icon{display:inline}
+  .filters{position:fixed;top:0;left:0;bottom:0;z-index:3000;width:84%;max-width:320px;transform:translateX(-100%);transition:.22s;box-shadow:0 0 40px rgba(0,0,0,.35)}
   .filters.open{transform:translateX(0)}
+  .backdrop{z-index:2900}
   .mobile-only{display:inline-flex}
-  .topbar{padding:6px 10px;gap:8px}
+  .topbar{padding:5px 10px;gap:8px}
   .daytag{font-size:11.5px;padding:3px 8px}
+  .daytag .dt-full{display:none}
+  .daytag .dt-short{display:inline}
   .split{flex-direction:column}
   .mapPane{flex:none;height:44vh;border-right:none;border-bottom:2px solid var(--line)}
   .listPane{flex:1;min-height:0}
@@ -198,7 +207,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     <div class="hsub">Brocantes & vide-greniers — partout en France</div>
     <div class="origin-pill">
       📍 <span id="originLabel">Plérin (22190)</span>
-      <button id="geoBtn">ma position</button>
+      <button id="geoBtn" title="Utiliser ma position"><span class="lbl-full">ma position</span><span class="lbl-icon">⌖</span></button>
       <button id="setOriginBtn">changer</button>
     </div>
   </div>
@@ -284,12 +293,14 @@ const EVENTS = [{"date": "2026-07-26", "city": "Coëtmieux", "type": "Vide-maiso
 const _now = new Date();
 const TODAY = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate());
 const TODAY_STR = TODAY.getFullYear()+'-'+String(TODAY.getMonth()+1).padStart(2,'0')+'-'+String(TODAY.getDate()).padStart(2,'0');
-const CAT_COLORS = {'Vide-grenier':'#2a7de1','Brocante':'#b5651d','Vide-maison':'#7a8b99','Braderie':'#6a4c93','Bourse / marché':'#2a9d8f','Autre':'#9a8f80'};
+const CAT_COLORS = {'Vide-grenier':'#2a7de1','Brocante':'#cf7a17','Vide-maison':'#7a8b99','Braderie':'#6a4c93','Bourse / marché':'#2a9d8f','Autre':'#9a8f80'};
 const CATS = ['Vide-grenier','Brocante','Braderie','Bourse / marché','Vide-maison'];
 const SIZES = [['S','Petite'],['M','Moyenne'],['L','Grande']];
 const SIZE_LABEL = {S:'Petite',M:'Moyenne',L:'Grande'};
 const MONTHS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const DAYS=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+const MONTHS_S=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const DAYS_S=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
 const DOW=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 const LIST_CAP=400;
 
@@ -309,6 +320,7 @@ function fmtDur(min){if(min>=60){const h=Math.floor(min/60),m=min%60;return h+' 
 function recomputeDist(){EVENTS.forEach(e=>{e.dist=(e.lat!=null)?hav(state.origin,[e.lat,e.lng]):null;e.drive=(e.dist!=null)?driveEst(e.dist):null;});}
 function parseD(s){return new Date(s+'T00:00:00');}
 function fmtDayHead(s){const d=parseD(s);return DAYS[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();}
+function fmtDayShort(s){const d=parseD(s);return DAYS_S[d.getDay()]+' '+d.getDate()+' '+MONTHS_S[d.getMonth()];}
 
 function passes(e){
   if(parseD(e.date) < TODAY) return false;
@@ -423,7 +435,7 @@ function drawOrigin(){
   originMarker=L.marker(state.origin,{icon:L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],
     html:'<div style="width:22px;height:22px;border-radius:50%;background:#e63946;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5)"></div>'})})
     .addTo(map).bindPopup('<b>Point de départ</b><br>'+state.originName);
-  if(state.maxDist<300)radiusCircle=L.circle(state.origin,{radius:state.maxDist*1000,color:'#b5651d',weight:1,fillColor:'#b5651d',fillOpacity:.05,dashArray:'5,6'}).addTo(map);
+  if(state.maxDist<300)radiusCircle=L.circle(state.origin,{radius:state.maxDist*1000,color:'#1a5c3c',weight:1,fillColor:'#1a5c3c',fillOpacity:.05,dashArray:'5,6'}).addTo(map);
 }
 
 /* ---------- SELECTION + ROUTE ---------- */
@@ -478,7 +490,7 @@ function renderAll(){
 }
 function updateDayTag(){
   const t=document.getElementById('dayTag');
-  if(state.selDay){t.style.display='';t.innerHTML='📅 '+fmtDayHead(state.selDay)+' ✕';t.onclick=()=>setMapDay(null);}
+  if(state.selDay){t.style.display='';t.innerHTML='📅 <span class="dt-full">'+fmtDayHead(state.selDay)+'</span><span class="dt-short">'+fmtDayShort(state.selDay)+'</span> ✕';t.onclick=()=>setMapDay(null);}
   else t.style.display='none';
   const mi=document.getElementById('mapDay');if(mi)mi.value=state.selDay||'';
   document.getElementById('mdToday').classList.toggle('active',state.selDay===TODAY_STR);
