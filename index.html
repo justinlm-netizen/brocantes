@@ -94,8 +94,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   border-radius:11px;padding:9px 11px;font-size:11.5px;box-shadow:var(--shadow);z-index:600}
 .legend .li{display:flex;align-items:center;gap:7px;margin:2px 0}
 .legend .dot{width:11px;height:11px;border-radius:50%}
-.legend.mini .li{display:none}
-.legend .toghide{display:none;font-weight:700;color:var(--accent-d);cursor:pointer}
+.legend.mini .legbody{display:none}
+.legend .toghide{display:none;font-weight:700;color:var(--accent-d);cursor:pointer;user-select:none}
 .recenter{position:absolute;bottom:14px;right:14px;z-index:900;width:44px;height:44px;border-radius:50%;
   background:#fff;border:1px solid var(--line);box-shadow:0 3px 10px rgba(60,45,25,.25);font-size:20px;
   display:flex;align-items:center;justify-content:center;color:var(--red);line-height:1}
@@ -194,7 +194,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   .mapbar input[type=date]{font-size:11px;height:28px;width:118px}
   .legend{padding:6px 8px}
   .legend.mini{padding:5px 9px}
-  .legend.mini .toghide{display:block}
+  .legend .toghide{display:block}
   .recenter{width:40px;height:40px;bottom:12px;right:12px}
 }
 </style>
@@ -216,14 +216,6 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <div class="body">
   <div class="backdrop" id="backdrop"></div>
   <aside class="filters" id="filters">
-    <div class="fgroup">
-      <h3>Recherche</h3>
-      <input class="search" id="search" placeholder="Ville, nom d'événement…" autocomplete="off">
-    </div>
-    <div class="fgroup" id="depGroup" style="display:none">
-      <h3>Département</h3>
-      <select class="search" id="depSel"><option value="">Tous les départements</option></select>
-    </div>
     <div class="fgroup">
       <h3>Type d'événement</h3>
       <div class="chips" id="catChips"></div>
@@ -365,9 +357,10 @@ function cardHTML(e){
     '<p class="nm">'+(e.name||e.type)+'</p>'+
     '<div class="badges"><span class="badge" style="background:'+col+'">'+e.cat+'</span>'+
       '<span class="badge size">'+SIZE_LABEL[e.size]+'</span>'+(e.cancelled?'<span class="badge cxl">Annulé</span>':'')+'</div>'+
-    '<div class="meta"><div class="r"><span class="ic">📅</span>'+fmtDayHead(e.date)+'</div>'+
+    '<div class="meta"><div class="r"><span class="ic">📅</span>'+fmtDayHead(e.date)+(e.time?' · dès '+e.time:'')+'</div>'+
       (e.drive!=null?'<div class="r"><span class="ic">🧭</span><span class="rline">'+e.drive.km+' km · ~'+fmtDur(e.drive.min)+' <span style="opacity:.6">(estimé)</span></span></div>':'')+
-      (e.address?'<div class="r"><span class="ic">📍</span>'+e.address+'</div>':'')+'</div>'+
+      (e.exhibitors?'<div class="r"><span class="ic">👥</span>'+e.exhibitors+' exposants</div>':'')+
+      (e.address?'<div class="r"><span class="ic">📍</span>'+e.address+(e.zip?' · '+e.zip:'')+'</div>':'')+'</div>'+
     '<div class="acts">'+actionLinks(e)+'</div></div>';
 }
 function renderList(){
@@ -394,6 +387,7 @@ function renderList(){
 }
 
 /* ---------- MAP ---------- */
+function toggleLegend(el){const leg=el.parentNode;const m=leg.classList.toggle('mini');el.textContent=m?'Légende ▸':'Légende ▾';}
 let map,cluster,originMarker,radiusCircle,routeLayer,markersById={};
 function initMap(){
   map=L.map('map',{zoomControl:true}).setView(state.origin,9);
@@ -402,9 +396,9 @@ function initMap(){
   cluster=L.markerClusterGroup({maxClusterRadius:45,spiderfyOnMaxZoom:true});
   map.addLayer(cluster);
   const leg=document.getElementById('legend');
-  leg.innerHTML='<div class="toghide" onclick="this.parentNode.classList.toggle(\'mini\')">Légende ▾</div><div style="font-weight:700;margin-bottom:3px">Type</div>'+
-    CATS.concat(['Autre']).map(c=>'<div class="li"><span class="dot" style="background:'+CAT_COLORS[c]+'"></span>'+c+'</div>').join('');
-  if(window.innerWidth<=860) leg.classList.add('mini');
+  leg.innerHTML='<div class="toghide" onclick="toggleLegend(this)">Légende ▾</div><div class="legbody"><div style="font-weight:700;margin-bottom:3px">Type</div>'+
+    CATS.concat(['Autre']).map(c=>'<div class="li"><span class="dot" style="background:'+CAT_COLORS[c]+'"></span>'+c+'</div>').join('')+'</div>';
+  if(window.innerWidth<=860){leg.classList.add('mini');leg.querySelector('.toghide').textContent='Légende ▸';}
 }
 function pinIcon(col,cxl,sel){
   const sc=sel?1.35:1;
@@ -507,20 +501,12 @@ function buildChips(){
   sc.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{const s=ch.dataset.sz;
     if(state.sizes.has(s)){state.sizes.delete(s);ch.classList.replace('on','off');}else{state.sizes.add(s);ch.classList.replace('off','on');}renderAll();});
 }
-function buildDeps(){
-  const deps={};EVENTS.forEach(e=>{if(e.dep)deps[e.dep]=e.depname||e.dep;});
-  const keys=Object.keys(deps).sort();const sel=document.getElementById('depSel');
-  if(keys.length>1){document.getElementById('depGroup').style.display='';
-    sel.innerHTML='<option value="">Tous les départements</option>'+keys.map(k=>'<option value="'+k+'">'+k+' — '+deps[k]+'</option>').join('');
-    sel.onchange=e=>{state.dep=e.target.value;renderAll();};}
-}
 function setMapDay(d){
   if(state.selectedId!=null){state.selectedId=null;if(routeLayer)routeLayer.clearLayers();document.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel'));}
   state.selDay=d||null;
   if(d){state.preset='all';document.querySelectorAll('#datePresets button').forEach(x=>x.classList.toggle('active',x.dataset.p==='all'));}
   renderAll();
 }
-document.getElementById('search').oninput=e=>{state.search=e.target.value;renderAll();};
 document.getElementById('dist').oninput=e=>{state.maxDist=+e.target.value;
   document.getElementById('distVal').textContent=state.maxDist>=300?'Partout':state.maxDist+' km';if(map)drawOrigin();renderAll();};
 document.getElementById('hideCancel').onchange=e=>{state.hideCancel=e.target.checked;renderAll();};
@@ -543,25 +529,32 @@ document.getElementById('recenterBtn').onclick=()=>{
 document.getElementById('reset').onclick=()=>{
   state.search='';state.dep='';state.cats=new Set(['Vide-grenier','Brocante']);state.sizes=new Set(['S','M','L']);
   state.maxDist=25;state.preset='all';state.from=null;state.to=null;state.hideCancel=false;state.hideVM=false;state.selDay=TODAY_STR;
-  document.getElementById('search').value='';document.getElementById('dist').value=25;document.getElementById('distVal').textContent='25 km';
+  document.getElementById('dist').value=25;document.getElementById('distVal').textContent='25 km';
   document.getElementById('dfrom').value='';document.getElementById('dto').value='';
   document.getElementById('hideCancel').checked=false;document.getElementById('hideVM').checked=false;
   document.querySelectorAll('#datePresets button').forEach(x=>x.classList.toggle('active',x.dataset.p==='all'));
-  const ds=document.getElementById('depSel');if(ds)ds.value='';
   clearSelection();buildChips();if(map)drawOrigin();renderAll();
 };
+function setOrigin(lat,lng,name){
+  state.origin=[lat,lng];state.originName=name;
+  document.getElementById('originLabel').textContent=name;
+  recomputeDist();if(map){map.setView(state.origin,11);drawOrigin();}renderAll();
+}
 document.getElementById('geoBtn').onclick=()=>{
   if(!navigator.geolocation){alert('Géolocalisation non disponible');return;}
-  navigator.geolocation.getCurrentPosition(p=>{state.origin=[p.coords.latitude,p.coords.longitude];state.originName='Ma position';
-    document.getElementById('originLabel').textContent='Ma position';recomputeDist();if(map){map.setView(state.origin,10);drawOrigin();}renderAll();},
+  navigator.geolocation.getCurrentPosition(p=>setOrigin(p.coords.latitude,p.coords.longitude,'Ma position'),
     ()=>alert('Impossible d\'obtenir votre position.'));
 };
-document.getElementById('setOriginBtn').onclick=()=>{
-  const v=prompt('Latitude, longitude (ex : 48.51, -2.76) — vide = Plérin :',state.origin.join(', '));
+document.getElementById('setOriginBtn').onclick=async()=>{
+  const v=prompt('Votre adresse ou ville (ex : 12 rue des Lilas, Rennes) — laissez vide pour revenir à Plérin :','');
   if(v===null)return;
-  if(v.trim()===''){state.origin=[48.5467,-2.7818];state.originName='Plérin (22190)';}
-  else{const p=v.split(',').map(x=>parseFloat(x.trim()));if(p.length===2&&!isNaN(p[0])&&!isNaN(p[1])){state.origin=p;state.originName='Point personnalisé';}else{alert('Format invalide');return;}}
-  document.getElementById('originLabel').textContent=state.originName;recomputeDist();if(map){map.setView(state.origin,10);drawOrigin();}renderAll();
+  if(v.trim()===''){setOrigin(48.5467,-2.7818,'Plérin (22190)');return;}
+  try{
+    const r=await fetch('https://api-adresse.data.gouv.fr/search/?limit=1&q='+encodeURIComponent(v.trim()));
+    const j=await r.json();
+    if(j.features&&j.features.length){const f=j.features[0],c=f.geometry.coordinates;setOrigin(c[1],c[0],f.properties.label||v.trim());}
+    else alert('Adresse introuvable — essayez d\'ajouter la ville ou le code postal.');
+  }catch(e){alert('Recherche impossible (vérifiez votre connexion).');}
 };
 document.getElementById('openFilters').onclick=()=>{document.getElementById('filters').classList.add('open');document.getElementById('backdrop').classList.add('show');};
 document.getElementById('backdrop').onclick=()=>{document.getElementById('filters').classList.remove('open');document.getElementById('backdrop').classList.remove('show');};
@@ -575,7 +568,7 @@ async function boot(){
       const gi=document.getElementById('genInfo');if(gi&&d&&d.generated)gi.textContent='Données mises à jour le '+d.generated+' · '+(arr?arr.length:0)+' événements.';}
   }catch(err){}
   EVENTS.forEach((e,i)=>e._id=i);
-  recomputeDist();buildDeps();buildChips();
+  recomputeDist();buildChips();
   const ds=availDates();const mi=document.getElementById('mapDay');if(ds.length&&mi){mi.min=ds[0];mi.max=ds[ds.length-1];}
   renderAll();
   if(map)setTimeout(()=>map.invalidateSize(),200);

@@ -1,28 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Collecteur brocabrac -> data.json
-==================================
-Parcourt brocabrac.fr pour une liste de departements francais et les prochains
-mois, geocode les communes via l'API officielle geo.api.gouv.fr, et ecrit un
-fichier data.json consommable par l'application (index.html).
+Collecteur brocabrac -> data.json  (version 2 : JSON-LD)
+========================================================
+brocabrac.fr embarque, pour chaque événement, un bloc JSON-LD schema.org/Event
+extrêmement complet (nom, date/heure, adresse exacte, coordonnées GPS précises,
+statut annulé). La taille est donnée par les "points" (span.dots[title="De 100 à 200"]).
 
-Concu pour tourner tout seul sur GitHub Actions (voir .github/workflows/update.yml).
+Ce collecteur parcourt brocabrac pour tous les départements et les prochains mois,
+puis produit data.json — sans dépendre d'un géocodage externe (les coordonnées
+viennent directement du JSON-LD).
+
+Structure HTML exploitée :
+  div.block.ev-list
+    div.ev-section
+      div.section-title[data-date="YYYY-MM-DD"]   <- date de l'occurrence (gère le multi-jours)
+      div.ev[data-event-id]
+        script[type=application/ld+json]           <- Event complet
+        span.dots[title="De 100 à 200"]  •••       <- taille (nb de points + fourchette)
+        span.cat[title="Vide-Grenier"]             <- type
+        p.info > .zipcode / .cat / .address
 
 Utilisation :
-    python scraper.py                      # tous les departements, 4 mois
-    python scraper.py --months 3           # horizon de 3 mois
-    python scraper.py --depts 22,35,56,29  # sous-ensemble (test)
-    python scraper.py --out data.json      # fichier de sortie
+    python scraper.py                      # tous les départements, 4 mois
+    python scraper.py --months 6
+    python scraper.py --depts 22,35,56,29
+    python scraper.py --out data.json
 
-Remarques importantes :
-- brocabrac n'expose pas de donnees structurees (JSON-LD). On analyse donc le
-  HTML. Le reperage repose sur le motif d'URL des fiches evenement
-  (/<dept>/<ville>/<id>-<nom>) et sur les en-tetes de date : c'est volontairement
-  robuste aux changements de classes CSS. Si brocabrac modifie profondement sa
-  structure, adaptez la fonction parse_listing().
-- Securite : si une execution ne collecte AUCUN evenement (parsing casse ou site
-  injoignable), le script n'ecrase PAS le data.json existant et sort en erreur.
+Sécurité : si une exécution ne collecte AUCUN événement, data.json n'est pas écrasé.
 """
 
 import argparse
@@ -34,50 +39,26 @@ import unicodedata
 from datetime import date
 
 import requests
-from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup
 
 BASE = "https://brocabrac.fr"
 GEO = "https://geo.api.gouv.fr"
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; BrocanteurBot/1.0; agregateur personnel de brocantes)",
+    "User-Agent": "Mozilla/5.0 (compatible; BrocanteurBot/2.0; agregateur personnel de brocantes)",
     "Accept-Language": "fr-FR,fr;q=0.9",
 }
-
 MONTH_SLUGS = ["janvier", "fevrier", "mars", "avril", "mai", "juin",
                "juillet", "aout", "septembre", "octobre", "novembre", "decembre"]
-
-# noms de mois tels qu'ils apparaissent dans les en-tetes (accentues ou non)
-MONTH_NAMES = {
-    "janvier": 1, "fevrier": 2, "février": 2, "mars": 3, "avril": 4, "mai": 5,
-    "juin": 6, "juillet": 7, "aout": 8, "août": 8, "septembre": 9,
-    "octobre": 10, "novembre": 11, "decembre": 12, "décembre": 12,
-}
-
-DATE_RE = re.compile(
-    r"(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)?\s*"
-    r"(\d{1,2})\s+"
-    r"(janvier|f[ée]vrier|mars|avril|mai|juin|juillet|ao[ûu]t|septembre|octobre|novembre|d[ée]cembre)"
-    r"\s+(\d{4})",
-    re.IGNORECASE,
-)
 
 session = requests.Session()
 session.headers.update(HEADERS)
 
 
-# ----------------------------------------------------------------------------
-# Utilitaires
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 def norm(s):
-    """Normalise un nom de commune pour la comparaison (sans accents, minuscules)."""
-    s = unicodedata.normalize("NFD", s)
+    s = unicodedata.normalize("NFD", s or "")
     s = "".join(c for c in s if unicodedata.category(c) != "Mn")
     return re.sub(r"[^a-z0-9]+", " ", s.lower()).strip()
-
-
-def deslug(slug):
-    """Transforme un slug d'URL en libelle lisible."""
-    return re.sub(r"\s+", " ", slug.replace("-", " ")).strip().capitalize()
 
 
 def get(url, tries=3):
@@ -89,231 +70,209 @@ def get(url, tries=3):
             if r.status_code == 404:
                 return None
         except requests.RequestException as e:
-            print(f"  ! erreur reseau {url} : {e}", file=sys.stderr)
+            print(f"  ! réseau {url} : {e}", file=sys.stderr)
         time.sleep(1.2 * (i + 1))
     return None
 
 
 def month_horizon(n):
-    """Renvoie les slugs de mois a parcourir a partir du mois courant."""
     d = date.today()
-    out = []
+    out, seen = [], set()
     for i in range(n):
-        out.append(MONTH_SLUGS[(d.month - 1 + i) % 12])
-    # dedup en gardant l'ordre
-    seen = set()
-    res = []
-    for m in out:
+        m = MONTH_SLUGS[(d.month - 1 + i) % 12]
         if m not in seen:
             seen.add(m)
-            res.append(m)
-    return res
-
-
-# ----------------------------------------------------------------------------
-# Categorie / taille (identique a la logique de l'app)
-# ----------------------------------------------------------------------------
-def category(text):
-    t = text.lower()
-    if "vide-maison" in t or "vide maison" in t or "vide garage" in t or "vide-garage" in t:
-        return "Vide-maison"
-    if "braderie" in t:
-        return "Braderie"
-    if "brocante" in t:
-        return "Brocante"
-    if "bourse" in t or "marche aux livres" in t or "marché aux livres" in t:
-        return "Bourse / marché"
-    if "vide-grenier" in t or "vide grenier" in t or "vide-greniers" in t or "puces" in t or "foire aux puces" in t:
-        return "Vide-grenier"
-    return "Autre"
-
-
-BIG_KW = ["foire a la brocante", "foire à la brocante", "foire aux puces", "grand vide grenier",
-          "grand vide-grenier", "grande braderie", "braderie d automne", "puces d ete",
-          "foire antiquites", "foire aux antiquites", "foire antiquités"]
-
-
-def size(cat, text):
-    blob = norm(text)
-    if any(norm(k) in blob for k in BIG_KW):
-        return "L"
-    if cat == "Vide-maison":
-        return "S"
-    if cat in ("Braderie", "Bourse / marché"):
-        if any(w in blob for w in ("livres", "vinyles", "vetements", "puericulture")):
-            return "S"
-        return "M"
-    return "M"
-
-
-# ----------------------------------------------------------------------------
-# Geocodage par departement (communes -> centre)
-# ----------------------------------------------------------------------------
-def load_departements():
-    """Renvoie [{code, nom}] pour tous les departements."""
-    txt = get(f"{GEO}/departements?fields=nom,code&format=json")
-    if not txt:
-        raise SystemExit("Impossible de recuperer la liste des departements (geo.api.gouv.fr).")
-    return json.loads(txt)
-
-
-def load_communes(dept_code):
-    """Renvoie {nom_normalise: (lat, lng)} pour un departement."""
-    url = f"{GEO}/communes?codeDepartement={dept_code}&fields=nom,centre&format=json&geometry=centre"
-    txt = get(url)
-    out = {}
-    if not txt:
-        return out
-    for c in json.loads(txt):
-        centre = c.get("centre")
-        if centre and centre.get("coordinates"):
-            lng, lat = centre["coordinates"][0], centre["coordinates"][1]
-            out[norm(c["nom"])] = (round(lat, 5), round(lng, 5), c["nom"])
+            out.append(m)
     return out
 
 
-# ----------------------------------------------------------------------------
-# Analyse d'une page de listing
-# ----------------------------------------------------------------------------
-def parse_listing(html, dept_code):
-    """
-    Extrait les evenements d'une page brocabrac (departement + mois).
-    Strategie robuste :
-      - parcours du document dans l'ordre ;
-      - toute chaine de texte qui ressemble a une date => date courante ;
-      - tout lien <a> vers une fiche /<dept>/<ville>/<id>-<nom> => evenement,
-        rattache a la date courante.
-    Renvoie une liste de dict bruts.
-    """
+# ---------------------------------------------------------------------------
+def category(text):
+    t = norm(text)
+    if "vide maison" in t or "vide garage" in t:
+        return "Vide-maison"
+    if "braderie" in t:
+        return "Braderie"
+    if "brocante" in t and "vide grenier" not in t:
+        return "Brocante"
+    if "bourse" in t or "marche aux livres" in t:
+        return "Bourse / marché"
+    if "vide grenier" in t or "vide greniers" in t or "puces" in t:
+        return "Vide-grenier"
+    if "brocante" in t:
+        return "Brocante"
+    return "Autre"
+
+
+def size_from(dotcount, exhibitors, cat, blob):
+    """Taille S/M/L : d'abord le nombre de points, sinon la fourchette, sinon le type."""
+    if dotcount >= 3:
+        return "L"
+    if dotcount == 2:
+        return "M"
+    if dotcount == 1:
+        return "S"
+    if exhibitors:
+        nums = [int(x) for x in re.findall(r"\d+", exhibitors)]
+        if nums:
+            up = max(nums)
+            return "S" if up <= 50 else ("M" if up <= 150 else "L")
+    if cat == "Vide-maison":
+        return "S"
+    if cat in ("Braderie", "Bourse / marché"):
+        return "S" if any(w in blob for w in ("livres", "vinyles", "vetements", "puericulture")) else "M"
+    return "M"
+
+
+# ---------------------------------------------------------------------------
+def parse_page(html, dep_code, dep_name):
+    """Extrait tous les événements d'une page (dept + mois)."""
     soup = BeautifulSoup(html, "lxml")
-    # motif de lien fiche pour CE departement (le code peut etre 22, 2a, 974...)
-    link_re = re.compile(rf"/{re.escape(dept_code.lower())}/([^/]+)/(\d+)-([^/?#]+)", re.IGNORECASE)
+    out = []
+    for sec in soup.select("div.ev-section"):
+        st = sec.select_one(".section-title[data-date]")
+        if not st:
+            continue
+        day = st.get("data-date")  # YYYY-MM-DD
+        for ev in sec.select(".ev[data-event-id]"):
+            eid = ev.get("data-event-id")
+            s = ev.find("script", attrs={"type": "application/ld+json"})
+            if not s:
+                continue
+            try:
+                j = json.loads(s.string or s.get_text())
+            except Exception:
+                continue
+            if isinstance(j, list):
+                j = next((x for x in j if x.get("@type") == "Event"), j[0] if j else {})
+            if not j:
+                continue
 
-    current = None  # (year, month, day)
-    events = []
-    seen_ids = set()
+            loc = j.get("location") or {}
+            geo = loc.get("geo") or {}
+            addr = loc.get("address") or {}
+            start = j.get("startDate") or ""
+            end = j.get("endDate") or ""
+            hhmm = start[11:16] if len(start) >= 16 else None
+            end_day = end[:10] if len(end) >= 10 else None
 
-    for node in soup.descendants:
-        if isinstance(node, NavigableString):
-            txt = str(node).strip()
-            if not txt or len(txt) > 60:
-                continue
-            m = DATE_RE.search(txt)
-            if m:
-                day = int(m.group(1))
-                mon = MONTH_NAMES.get(m.group(2).lower())
-                yr = int(m.group(3))
-                if mon:
-                    current = (yr, mon, day)
-        elif isinstance(node, Tag) and node.name == "a" and node.get("href"):
-            href = node.get("href")
-            lm = link_re.search(href)
-            if not lm:
-                continue
-            ville_slug, eid, name_slug = lm.group(1), lm.group(2), lm.group(3)
-            if not current:
-                continue  # pas de date connue -> on ignore (evite les liens hors-liste)
-            key = (eid, current)
-            if key in seen_ids:
-                continue
-            seen_ids.add(key)
-            name = deslug(name_slug)
-            # detection "annule" dans le voisinage immediat
-            around = ""
-            parent = node.parent
-            if parent:
-                around = norm(parent.get_text(" ", strip=True))
-            cancelled = "annule" in around
-            events.append({
-                "y": current[0], "m": current[1], "d": current[2],
-                "ville_slug": ville_slug, "id": eid,
-                "name": name, "cancelled": cancelled,
+            # type depuis span.cat[title]
+            cat_span = ev.select_one(".cat[title]")
+            typ = (cat_span.get("title").strip() if cat_span and cat_span.get("title")
+                   else (ev.select_one("p.info .cat").get_text(strip=True) if ev.select_one("p.info .cat") else ""))
+
+            # taille depuis span.dots
+            dots = ev.select_one(".dots")
+            exhibitors = dots.get("title").strip() if dots and dots.get("title") else None
+            dotcount = dots.get_text().count("•") if dots else 0
+
+            status = (j.get("eventStatus") or "")
+            cancelled = "cancel" in status.lower()
+
+            city = addr.get("addressLocality") or ""
+            street = addr.get("streetAddress")
+            zipc = addr.get("postalCode")
+            lat = geo.get("latitude")
+            lng = geo.get("longitude")
+            try:
+                lat = round(float(lat), 6) if lat is not None else None
+                lng = round(float(lng), 6) if lng is not None else None
+            except (TypeError, ValueError):
+                lat = lng = None
+
+            cat = category(typ or j.get("name", ""))
+            blob = norm((j.get("name") or "") + " " + (typ or ""))
+            out.append({
+                "id": eid,
+                "date": day,
+                "time": hhmm,
+                "enddate": end_day if end_day and end_day != day else None,
+                "city": city,
+                "type": typ or cat,
+                "name": j.get("name"),
+                "address": street,
+                "zip": zipc,
+                "exhibitors": exhibitors,
+                "cancelled": cancelled,
+                "cat": cat,
+                "size": size_from(dotcount, exhibitors, cat, blob),
+                "lat": lat,
+                "lng": lng,
+                "dep": dep_code,
+                "depname": dep_name,
+                "url": j.get("url") or j.get("@id"),
             })
-    return events
+    return out
 
 
-# ----------------------------------------------------------------------------
-# Collecte d'un departement
-# ----------------------------------------------------------------------------
-def scrape_departement(code, nom, months, communes, sleep=0.3):
-    results = {}  # (id, date) -> event
+def scrape_departement(code, nom, months, sleep=0.3):
+    results = {}
     for mslug in months:
-        seen_ids_month = set()
+        seen_month = set()
         page = 1
         while True:
             url = f"{BASE}/{code.lower()}/{mslug}/" + (f"?p={page}" if page > 1 else "")
             html = get(url)
             if not html:
                 break
-            evs = parse_listing(html, code)
-            new_ids = {e["id"] for e in evs} - seen_ids_month
-            if not new_ids:
+            evs = parse_page(html, code, nom)
+            page_keys = {(e["id"], e["date"]) for e in evs}
+            new_keys = page_keys - seen_month
+            if not new_keys:
                 break  # page hors-limite (brocabrac renvoie la page 1) ou plus rien
-            seen_ids_month |= {e["id"] for e in evs}
+            seen_month |= page_keys
             for e in evs:
-                date_str = f"{e['y']:04d}-{e['m']:02d}-{e['d']:02d}"
-                key = (e["id"], date_str)
-                if key in results:
-                    continue
-                cat = category(e["name"])
-                geo = communes.get(norm(deslug(e["ville_slug"])))
-                city = geo[2] if geo else deslug(e["ville_slug"])
-                results[key] = {
-                    "date": date_str,
-                    "city": city,
-                    "type": cat,               # type deduit du nom (pas de type explicite fiable)
-                    "name": e["name"],
-                    "address": None,
-                    "cancelled": e["cancelled"],
-                    "cat": cat,
-                    "size": size(cat, e["name"]),
-                    "dep": code,
-                    "depname": nom,
-                    "lat": geo[0] if geo else None,
-                    "lng": geo[1] if geo else None,
-                }
+                results[(e["id"], e["date"])] = e
             page += 1
-            if page > 12:  # garde-fou
+            if page > 15:
                 break
             time.sleep(sleep)
+    # nettoyer la clé technique 'id'
+    for e in results.values():
+        e.pop("id", None)
     return list(results.values())
 
 
-# ----------------------------------------------------------------------------
-# Main
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+def load_departements():
+    txt = get(f"{GEO}/departements?fields=nom,code&format=json")
+    if not txt:
+        raise SystemExit("Impossible de récupérer la liste des départements.")
+    return json.loads(txt)
+
+
 def main():
-    ap = argparse.ArgumentParser(description="Collecteur brocabrac -> data.json")
-    ap.add_argument("--months", type=int, default=4, help="nombre de mois a parcourir (defaut 4)")
-    ap.add_argument("--depts", type=str, default="", help="codes de departements separes par des virgules (defaut : tous)")
-    ap.add_argument("--out", type=str, default="data.json", help="fichier de sortie")
-    ap.add_argument("--sleep", type=float, default=0.3, help="pause entre requetes (s)")
+    ap = argparse.ArgumentParser(description="Collecteur brocabrac -> data.json (JSON-LD)")
+    ap.add_argument("--months", type=int, default=4)
+    ap.add_argument("--depts", type=str, default="")
+    ap.add_argument("--out", type=str, default="data.json")
+    ap.add_argument("--sleep", type=float, default=0.3)
     args = ap.parse_args()
 
     months = month_horizon(args.months)
-    print(f"Mois parcourus : {', '.join(months)}")
+    print(f"Mois : {', '.join(months)}")
 
-    all_deps = load_departements()
+    deps = load_departements()
     if args.depts:
         wanted = {d.strip().lower() for d in args.depts.split(",") if d.strip()}
-        all_deps = [d for d in all_deps if d["code"].lower() in wanted]
-    print(f"{len(all_deps)} departement(s) a collecter.")
+        deps = [d for d in deps if d["code"].lower() in wanted]
+    print(f"{len(deps)} département(s).")
 
     events = []
-    for i, dep in enumerate(all_deps, 1):
-        code, nom = dep["code"], dep["nom"]
-        communes = load_communes(code)
-        evs = scrape_departement(code, nom, months, communes, sleep=args.sleep)
+    for i, dep in enumerate(deps, 1):
+        evs = scrape_departement(dep["code"], dep["nom"], months, sleep=args.sleep)
         events.extend(evs)
-        print(f"[{i}/{len(all_deps)}] {code} {nom} : {len(evs)} evenements (communes geocodees: {len(communes)})")
+        geoloc = sum(1 for e in evs if e["lat"] is not None)
+        sized = sum(1 for e in evs if e["exhibitors"])
+        print(f"[{i}/{len(deps)}] {dep['code']} {dep['nom']} : {len(evs)} évts "
+              f"({geoloc} géoloc., {sized} avec taille)")
         time.sleep(args.sleep)
 
-    # Securite : ne jamais ecraser par du vide
     if not events:
-        print("ERREUR : aucun evenement collecte. Le fichier existant n'est pas modifie.", file=sys.stderr)
+        print("ERREUR : aucun événement. data.json non modifié.", file=sys.stderr)
         sys.exit(1)
 
-    events.sort(key=lambda e: (e["date"], e["dep"], e["city"]))
+    events.sort(key=lambda e: (e["date"], e["dep"], e["city"] or ""))
     payload = {
         "generated": date.today().isoformat(),
         "source": "brocabrac.fr",
@@ -323,7 +282,9 @@ def main():
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False)
     geoloc = sum(1 for e in events if e["lat"] is not None)
-    print(f"OK : {len(events)} evenements ecrits dans {args.out} ({geoloc} geolocalises).")
+    sized = sum(1 for e in events if e["exhibitors"])
+    print(f"OK : {len(events)} événements -> {args.out} "
+          f"({geoloc} géolocalisés, {sized} avec taille exacte).")
 
 
 if __name__ == "__main__":
