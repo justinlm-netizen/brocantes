@@ -3,7 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Brocantes & Vide-greniers — Côtes-d'Armor</title>
+<title>Brocanteur — Brocantes & vide-greniers de France</title>
+<meta name="theme-color" content="#b5651d">
+<meta name="description" content="Toutes les brocantes, vide-greniers et braderies de France : carte, calendrier, distances et temps de trajet depuis chez vous.">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Brocanteur">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css">
@@ -142,6 +150,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .mapday button:hover{background:#f6ede0;border-color:var(--accent)}
 .mapday input[type=date]{border:1px solid var(--line);border-radius:8px;padding:5px 6px;font-size:13px;background:#fbf8f3;min-width:0}
 .mapday .clr{width:auto;padding:0 10px;font-size:12px;font-weight:600}
+.mapday .clr.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 @media(max-width:820px){ .mapday{flex-wrap:wrap;justify-content:center} .mapday .lbl{width:100%;text-align:center} }
 
 .mobile-filter-btn{display:none}
@@ -252,6 +261,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <input type="date" id="mapDay">
         <button id="mdNext" title="Jour suivant">›</button>
         <button class="clr" id="mdAll" title="Afficher toutes les dates">Toutes</button>
+        <button class="clr" id="mdRoutes" title="Afficher les trajets depuis mon point de départ">🛣️ Trajets</button>
       </div>
       <div id="map"></div>
       <div class="legend" id="legend"></div>
@@ -290,7 +300,7 @@ const state = {
   view:'list', search:'', dep:'', cats:new Set(CATS.concat(['Autre'])), sizes:new Set(['S','M','L']),
   maxDist:100, preset:'all', from:null, to:null, hideCancel:false, hideVM:false,
   origin:[48.5467,-2.7818], originName:'Plérin (22190)', sort:'date', selDay:null,
-  calY:_now.getFullYear(), calM:_now.getMonth()
+  showRoutes:false, calY:_now.getFullYear(), calM:_now.getMonth()
 };
 
 function hav(a,b){
@@ -386,10 +396,12 @@ function cardHTML(e){
 }
 
 /* ---------- MAP ---------- */
-let map, cluster, originMarker, radiusCircle;
+let map, cluster, originMarker, radiusCircle, routeLayer, highlightLayer;
 function initMap(){
   map=L.map('map',{zoomControl:true}).setView(state.origin,9);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
+  routeLayer=L.layerGroup().addTo(map);
+  highlightLayer=L.layerGroup().addTo(map);
   cluster=L.markerClusterGroup({maxClusterRadius:45,spiderfyOnMaxZoom:true});
   map.addLayer(cluster);
   const leg=document.getElementById('legend');
@@ -408,6 +420,7 @@ function renderMap(){
   }
   if(!map){ initMap(); }
   cluster.clearLayers();
+  if(highlightLayer) highlightLayer.clearLayers();
   const list=filtered().filter(e=>e.lat!=null);
   const jit={};
   list.forEach(e=>{
@@ -427,9 +440,26 @@ function renderMap(){
       '<div style="margin-top:5px;font-size:12px">📅 '+fmtDayHead(e.date)+'</div>'+
       (e.address?'<div style="font-size:12px;color:#666">📍 '+e.address+'</div>':'')+
       '<a class="pop-a" href="https://www.google.com/maps/search/?api=1&query='+q+'" target="_blank">🧭 Itinéraire</a>');
+    m.on('click',()=>highlightRoute(e));
     cluster.addLayer(m);
   });
   drawOrigin();
+  drawRoutes();
+}
+function drawRoutes(){
+  if(!routeLayer) return;
+  routeLayer.clearLayers();
+  const btn=document.getElementById('mdRoutes'); if(btn) btn.classList.toggle('active',state.showRoutes);
+  if(!state.showRoutes) return;
+  filtered().filter(e=>e.lat!=null).forEach(e=>{
+    L.polyline([state.origin,[e.lat,e.lng]],{color:'#8f4d13',weight:1.4,opacity:.32,dashArray:'4,6'}).addTo(routeLayer);
+  });
+}
+function highlightRoute(e){
+  if(!highlightLayer) return;
+  highlightLayer.clearLayers();
+  if(e.lat==null) return;
+  L.polyline([state.origin,[e.lat,e.lng]],{color:'#e63946',weight:3.5,opacity:.9}).addTo(highlightLayer);
 }
 function drawOrigin(){
   if(originMarker) map.removeLayer(originMarker);
@@ -588,6 +618,7 @@ function setMapDay(d){
 }
 document.getElementById('mapDay').onchange=e=>setMapDay(e.target.value||null);
 document.getElementById('mdAll').onclick=()=>setMapDay(null);
+document.getElementById('mdRoutes').onclick=()=>{ state.showRoutes=!state.showRoutes; drawRoutes(); };
 document.getElementById('mdPrev').onclick=()=>{ const ds=availDates(); if(!ds.length)return;
   let i=state.selDay?ds.indexOf(state.selDay):0; if(i<0)i=0; i=Math.max(0,i-1); setMapDay(ds[i]); };
 document.getElementById('mdNext').onclick=()=>{ const ds=availDates(); if(!ds.length)return;
