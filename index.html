@@ -324,7 +324,7 @@ function passes(e){
   if(!state.sizes.has(e.size)) return false;
   if(state.hideCancel && e.cancelled) return false;
   if(state.hideVM && e.cat==='Vide-maison') return false;
-  if(e.dist!=null && state.maxDist<300 && e.dist>state.maxDist) return false;
+  if(state.maxDist<300 && (e.dist==null || e.dist>state.maxDist)) return false;
   if(state.search){const q=state.search.toLowerCase();
     if(!((e.city||'').toLowerCase().includes(q)||(e.name||'').toLowerCase().includes(q)||(e.type||'').toLowerCase().includes(q))) return false;}
   const d=parseD(e.date);
@@ -503,7 +503,7 @@ function passesNoDate(e){
   if(!state.sizes.has(e.size))return false;
   if(state.hideCancel&&e.cancelled)return false;
   if(state.hideVM&&e.cat==='Vide-maison')return false;
-  if(e.dist!=null&&state.maxDist<300&&e.dist>state.maxDist)return false;
+  if(state.maxDist<300&&(e.dist==null||e.dist>state.maxDist))return false;
   if(state.search){const q=state.search.toLowerCase();
     if(!((e.city||'').toLowerCase().includes(q)||(e.name||'').toLowerCase().includes(q)||(e.type||'').toLowerCase().includes(q)))return false;}
   return true;
