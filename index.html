@@ -166,6 +166,23 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .mobile-only{display:none}
 .backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:55}
 .backdrop.show{display:block}
+.posmodal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:3000;align-items:flex-start;justify-content:center}
+.posmodal.show{display:flex}
+.posmodal-box{background:var(--card);border-radius:16px;box-shadow:0 14px 44px rgba(0,0,0,.32);width:min(440px,92vw);margin-top:11vh;padding:18px 18px 16px;border:1px solid var(--line)}
+.posmodal-box h4{margin:0 0 3px;font-size:16px;color:var(--ink)}
+.posmodal-box .sub{margin:0 0 12px;font-size:12.5px;color:var(--muted)}
+.pin{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:15px;background:#f0f5f2;box-sizing:border-box}
+.pin:focus{outline:2px solid var(--accent);border-color:transparent}
+.pos-sugg{list-style:none;margin:8px 0 0;padding:0;max-height:262px;overflow-y:auto}
+.pos-sugg li{padding:9px 11px;border-radius:9px;cursor:pointer;font-size:14px;display:flex;flex-direction:column;gap:1px}
+.pos-sugg li small{color:var(--muted);font-size:11.5px}
+.pos-sugg li:hover,.pos-sugg li.active{background:#e6efe9}
+.pos-sugg li.hint{color:var(--muted);cursor:default;font-size:12.5px}
+.pos-sugg li.hint:hover{background:none}
+.pos-foot{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px}
+.pos-foot button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 13px;font-size:13px;font-weight:600;color:var(--accent-d)}
+.pos-foot button:hover{background:#e6efe9;border-color:var(--accent)}
+.pos-foot .plerin{background:none;border:1px dashed var(--line);color:var(--muted);font-weight:500}
 @media(max-width:860px){
   body{overflow:hidden}
   header{padding:6px 12px}
@@ -215,6 +232,18 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 
 <div class="body">
   <div class="backdrop" id="backdrop"></div>
+  <div class="posmodal" id="posModal">
+    <div class="posmodal-box">
+      <h4>Changer de position</h4>
+      <p class="sub">Tapez une adresse, une ville ou un code postal, puis choisissez une proposition.</p>
+      <input class="pin" id="posInput" type="text" autocomplete="off" placeholder="Ex : 12 rue des Lilas, Rennes" />
+      <ul class="pos-sugg" id="posSugg"></ul>
+      <div class="pos-foot">
+        <button class="plerin" id="posPlerin">↺ Revenir à Plérin</button>
+        <button id="posCancel">Fermer</button>
+      </div>
+    </div>
+  </div>
   <aside class="filters" id="filters">
     <div class="fgroup">
       <h3>Type d'événement</h3>
@@ -545,17 +574,36 @@ document.getElementById('geoBtn').onclick=()=>{
   navigator.geolocation.getCurrentPosition(p=>setOrigin(p.coords.latitude,p.coords.longitude,'Ma position'),
     ()=>alert('Impossible d\'obtenir votre position.'));
 };
-document.getElementById('setOriginBtn').onclick=async()=>{
-  const v=prompt('Votre adresse ou ville (ex : 12 rue des Lilas, Rennes) — laissez vide pour revenir à Plérin :','');
-  if(v===null)return;
-  if(v.trim()===''){setOrigin(48.5467,-2.7818,'Plérin (22190)');return;}
-  try{
-    const r=await fetch('https://api-adresse.data.gouv.fr/search/?limit=1&q='+encodeURIComponent(v.trim()));
-    const j=await r.json();
-    if(j.features&&j.features.length){const f=j.features[0],c=f.geometry.coordinates;setOrigin(c[1],c[0],f.properties.label||v.trim());}
-    else alert('Adresse introuvable — essayez d\'ajouter la ville ou le code postal.');
-  }catch(e){alert('Recherche impossible (vérifiez votre connexion).');}
-};
+(function(){
+  const modal=document.getElementById('posModal'),input=document.getElementById('posInput'),sugg=document.getElementById('posSugg');
+  let items=[],active=-1,timer=null,seq=0;
+  function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function open(){modal.classList.add('show');input.value='';items=[];active=-1;render();setTimeout(()=>input.focus(),40);}
+  function close(){modal.classList.remove('show');clearTimeout(timer);}
+  function render(){
+    if(!items.length){sugg.innerHTML=input.value.trim().length>=3?'<li class="hint">Aucune proposition — précisez la ville ou le code postal.</li>':'';return;}
+    sugg.innerHTML=items.map((f,i)=>{const p=f.properties,main=p.name||p.label,ctx=(p.postcode?p.postcode+' ':'')+(p.city||'')+(p.context?' · '+p.context:'');
+      return '<li data-i="'+i+'" class="'+(i===active?'active':'')+'"><span>'+esc(main)+'</span><small>'+esc(ctx)+'</small></li>';}).join('');
+    [...sugg.querySelectorAll('li[data-i]')].forEach(li=>li.onclick=()=>choose(+li.dataset.i));
+  }
+  async function search(q){const my=++seq;
+    try{const r=await fetch('https://api-adresse.data.gouv.fr/search/?limit=6&autocomplete=1&q='+encodeURIComponent(q));
+      const j=await r.json();if(my!==seq)return;items=j.features||[];active=items.length?0:-1;render();}
+    catch(e){if(my===seq){items=[];render();}}
+  }
+  function choose(i){const f=items[i];if(!f)return;const c=f.geometry.coordinates;setOrigin(c[1],c[0],f.properties.label||input.value.trim());close();}
+  input.addEventListener('input',()=>{const q=input.value.trim();active=-1;clearTimeout(timer);
+    if(q.length<3){items=[];render();return;}timer=setTimeout(()=>search(q),220);});
+  input.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'){e.preventDefault();if(items.length){active=(active+1)%items.length;render();}}
+    else if(e.key==='ArrowUp'){e.preventDefault();if(items.length){active=(active-1+items.length)%items.length;render();}}
+    else if(e.key==='Enter'){e.preventDefault();if(active>=0)choose(active);else if(items.length)choose(0);}
+    else if(e.key==='Escape')close();});
+  document.getElementById('posCancel').onclick=close;
+  document.getElementById('posPlerin').onclick=()=>{setOrigin(48.5467,-2.7818,'Plérin (22190)');close();};
+  modal.addEventListener('click',e=>{if(e.target===modal)close();});
+  document.getElementById('setOriginBtn').onclick=open;
+})();
 document.getElementById('openFilters').onclick=()=>{document.getElementById('filters').classList.add('open');document.getElementById('backdrop').classList.add('show');};
 document.getElementById('backdrop').onclick=()=>{document.getElementById('filters').classList.remove('open');document.getElementById('backdrop').classList.remove('show');};
 window.addEventListener('resize',()=>{if(map)setTimeout(()=>map.invalidateSize(),100);});
