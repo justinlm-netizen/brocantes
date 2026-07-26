@@ -1,0 +1,40 @@
+name: Mise à jour des brocantes
+
+# Se déclenche automatiquement chaque jour, et manuellement depuis l'onglet Actions.
+on:
+  schedule:
+    - cron: '17 4 * * *'   # tous les jours à 04:17 UTC (≈ 06:17 heure de Paris)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  collecte:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Collecter les données brocabrac (toute la France, 4 mois)
+        run: python scraper.py --months 4 --out data.json
+
+      - name: Publier data.json s'il a changé
+        run: |
+          git config user.name "brocanteur-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          if git diff --staged --quiet; then
+            echo "Aucun changement dans data.json."
+          else
+            git commit -m "Mise à jour des brocantes ($(date -u +%Y-%m-%d))"
+            git push
+          fi
