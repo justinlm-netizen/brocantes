@@ -94,6 +94,10 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .legend .dot{width:11px;height:11px;border-radius:50%}
 .legend.mini .li{display:none}
 .legend .toghide{display:none;font-weight:700;color:var(--accent-d);cursor:pointer}
+.recenter{position:absolute;bottom:14px;right:14px;z-index:900;width:44px;height:44px;border-radius:50%;
+  background:#fff;border:1px solid var(--line);box-shadow:0 3px 10px rgba(60,45,25,.25);font-size:20px;
+  display:flex;align-items:center;justify-content:center;color:var(--red);line-height:1}
+.recenter:hover{background:#f6ede0;border-color:var(--accent)}
 
 /* selection info bar over map */
 .selinfo{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:900;width:calc(100% - 24px);max-width:520px;
@@ -161,21 +165,28 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:55}
 .backdrop.show{display:block}
 @media(max-width:860px){
-  body{overflow:auto}
+  body{overflow:hidden}
+  header{padding:7px 12px}
+  .brand{font-size:16px}
+  .brand .logo{font-size:18px}
+  .hsub{display:none}
+  .origin-pill{margin-left:auto;font-size:12px;padding:4px 9px;gap:6px}
   .filters{position:fixed;top:0;left:0;bottom:0;z-index:60;width:84%;max-width:320px;transform:translateX(-100%);transition:.22s;box-shadow:0 0 40px rgba(0,0,0,.3)}
   .filters.open{transform:translateX(0)}
   .mobile-only{display:inline-flex}
-  .origin-pill{margin-left:0}
+  .topbar{padding:6px 10px;gap:8px}
+  .daytag{font-size:11.5px;padding:3px 8px}
   .split{flex-direction:column}
-  .mapPane{flex:none;height:46vh;border-right:none;border-bottom:1px solid var(--line)}
-  .listPane{flex:1;min-height:40vh}
+  .mapPane{flex:none;height:44vh;border-right:none;border-bottom:2px solid var(--line)}
+  .listPane{flex:1;min-height:0}
   .cards{grid-template-columns:1fr}
   .mapbar{gap:3px;padding:4px 5px;top:8px}
   .mapbar button{height:28px;min-width:28px;padding:0 6px;font-size:12px}
-  .mapbar input[type=date]{font-size:11px;height:28px;width:120px}
+  .mapbar input[type=date]{font-size:11px;height:28px;width:118px}
   .legend{padding:6px 8px}
   .legend.mini{padding:5px 9px}
   .legend.mini .toghide{display:block}
+  .recenter{width:40px;height:40px;bottom:12px;right:12px}
 }
 </style>
 </head>
@@ -247,11 +258,6 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button class="tbtn mobile-only" id="openFilters">⚙︎ Filtres</button>
       <span><b id="count">0</b> événements</span>
       <span class="daytag" id="dayTag" style="display:none"></span>
-      <button class="tbtn" id="calBtn">📅 Calendrier</button>
-      <select class="sortsel" id="sort">
-        <option value="date">Trier par date</option>
-        <option value="dist">Trier par distance</option>
-      </select>
     </div>
     <div class="split">
       <div class="mapPane">
@@ -264,24 +270,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         </div>
         <div id="map"></div>
         <div class="legend" id="legend"></div>
-        <div class="selinfo" id="selInfo" style="display:none"></div>
+        <button class="recenter" id="recenterBtn" title="Revenir à mon point de départ">📍</button>
       </div>
       <div class="listPane" id="listView"></div>
     </div>
   </main>
-</div>
-
-<div class="modal" id="calModal" style="display:none">
-  <div class="modal-box">
-    <div class="calnav">
-      <button id="calPrev">‹</button>
-      <div class="mlabel" id="calLabel"></div>
-      <button id="calNext">›</button>
-      <button class="cx" id="calClose" title="Fermer">✕</button>
-    </div>
-    <div class="grid" id="calGrid"></div>
-  </div>
-</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -361,7 +354,7 @@ function cardHTML(e){
     '<div class="badges"><span class="badge" style="background:'+col+'">'+e.cat+'</span>'+
       '<span class="badge size">'+SIZE_LABEL[e.size]+'</span>'+(e.cancelled?'<span class="badge cxl">Annulé</span>':'')+'</div>'+
     '<div class="meta"><div class="r"><span class="ic">📅</span>'+fmtDayHead(e.date)+'</div>'+
-      (e.drive!=null?'<div class="r"><span class="ic">🧭</span>'+e.drive.km+' km · ~'+fmtDur(e.drive.min)+' <span style="opacity:.6">(estimé)</span></div>':'')+
+      (e.drive!=null?'<div class="r"><span class="ic">🧭</span><span class="rline">'+e.drive.km+' km · ~'+fmtDur(e.drive.min)+' <span style="opacity:.6">(estimé)</span></span></div>':'')+
       (e.address?'<div class="r"><span class="ic">📍</span>'+e.address+'</div>':'')+'</div>'+
     '<div class="acts">'+actionLinks(e)+'</div></div>';
 }
@@ -436,37 +429,21 @@ function drawOrigin(){
 /* ---------- SELECTION + ROUTE ---------- */
 let routeToken=0;
 function selectEvent(id,source){
+  if(id===state.selectedId){clearSelection();return;} // reclic = désélection
   state.selectedId=id;
   const e=EVENTS.find(x=>x._id===id);
   if(!e)return;
-  // list highlight
   document.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel'));
   const card=document.querySelector('.card[data-id="'+id+'"]');
-  if(card){card.classList.add('sel');if(source==='map')card.scrollIntoView({block:'nearest',behavior:'smooth'});}
-  // map marker highlight (rebuild icons quickly)
+  if(card){card.classList.add('sel');card.scrollIntoView({block:'nearest',behavior:'smooth'});}
   if(map){
-    Object.entries(markersById).forEach(([k,m])=>{
-      const ev=EVENTS.find(x=>x._id===+k);const col=CAT_COLORS[ev.cat]||CAT_COLORS['Autre'];
-      m.setIcon(pinIcon(col,ev.cancelled,+k===id));
-    });
-    const mk=markersById[id];
-    if(mk){ if(source==='list'){ cluster.zoomToShowLayer(mk,()=>{mk.openPopup&&null; map.panTo(mk._pos);}); } }
+    Object.entries(markersById).forEach(([k,m])=>{const ev=EVENTS.find(x=>x._id===+k);const col=CAT_COLORS[ev.cat]||CAT_COLORS['Autre'];m.setIcon(pinIcon(col,ev.cancelled,+k===id));});
+    if(source==='list' && e.lat!=null){ map.panTo([e.lat,e.lng]); if(map.getZoom()<9) map.setZoom(9); }
   }
-  showSelInfo(e);
   drawRoute(e);
-}
-function showSelInfo(e){
-  const box=document.getElementById('selInfo');
-  const col=CAT_COLORS[e.cat]||CAT_COLORS['Autre'];
-  box.innerHTML='<div class="si-top"><div><div class="si-city">'+e.city+'</div><div class="si-nm">'+(e.name||e.type)+' · '+fmtDayHead(e.date)+'</div>'+
-    '<div class="si-route" id="siRoute">🚗 '+(e.drive?e.drive.km+' km · ~'+fmtDur(e.drive.min)+' (estimé)':'—')+'</div></div>'+
-    '<button class="si-x" onclick="clearSelection()">✕</button></div>'+
-    '<div class="si-acts">'+actionLinks(e)+'<a class="a-src" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((e.address?e.address+', ':'')+e.city+' '+(e.dep||''))+'" target="_blank" rel="noopener">Voir</a></div>';
-  box.style.display='block';
 }
 function clearSelection(){
   state.selectedId=null;
-  document.getElementById('selInfo').style.display='none';
   if(routeLayer)routeLayer.clearLayers();
   document.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel'));
   if(map)renderMap();
@@ -476,64 +453,29 @@ async function drawRoute(e){
   routeLayer.clearLayers();
   if(e.lat==null)return;
   const o=state.origin, tok=++routeToken;
-  // fallback straight line immediately
-  const straight=L.polyline([o,[e.lat,e.lng]],{color:'#e63946',weight:2.5,opacity:.5,dashArray:'6,7'}).addTo(routeLayer);
+  L.polyline([o,[e.lat,e.lng]],{color:'#e63946',weight:2.5,opacity:.5,dashArray:'6,7'}).addTo(routeLayer);
   try{
     const url='https://router.project-osrm.org/route/v1/driving/'+o[1]+','+o[0]+';'+e.lng+','+e.lat+'?overview=full&geometries=geojson';
     const r=await fetch(url);const j=await r.json();
-    if(tok!==routeToken)return; // superseded
+    if(tok!==routeToken)return;
     if(j.routes&&j.routes[0]){
       routeLayer.clearLayers();
       const coords=j.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
       L.polyline(coords,{color:'#e63946',weight:4.5,opacity:.9}).addTo(routeLayer);
       L.polyline(coords,{color:'#fff',weight:1.4,opacity:.6}).addTo(routeLayer);
       const min=Math.round(j.routes[0].duration/60),km=j.routes[0].distance/1000;
-      const el=document.getElementById('siRoute');
-      if(el)el.innerHTML='🚗 '+km.toFixed(0)+' km · '+fmtDur(min)+' <span style="opacity:.6;font-weight:400">par la route</span>';
-      try{map.fitBounds(L.latLngBounds(coords).pad(0.15),{maxZoom:12});}catch(_){}
+      const card=document.querySelector('.card[data-id="'+e._id+'"]');
+      if(card){const rl=card.querySelector('.rline');if(rl)rl.innerHTML=km.toFixed(0)+' km · '+fmtDur(min)+' <span style="opacity:.6">par la route</span>';
+               const db=card.querySelector('.dist');if(db)db.innerHTML='🚗 '+fmtDur(min);}
     }
   }catch(err){/* garde la ligne droite + estimation */}
 }
 
-/* ---------- CALENDAR MODAL ---------- */
-function passesNoDate(e){
-  if(parseD(e.date)<TODAY)return false;
-  if(state.dep&&e.dep!==state.dep)return false;
-  if(!state.cats.has(e.cat))return false;
-  if(!state.sizes.has(e.size))return false;
-  if(state.hideCancel&&e.cancelled)return false;
-  if(state.hideVM&&e.cat==='Vide-maison')return false;
-  if(state.maxDist<300&&(e.dist==null||e.dist>state.maxDist))return false;
-  if(state.search){const q=state.search.toLowerCase();
-    if(!((e.city||'').toLowerCase().includes(q)||(e.name||'').toLowerCase().includes(q)||(e.type||'').toLowerCase().includes(q)))return false;}
-  return true;
-}
-function renderCal(){
-  document.getElementById('calLabel').textContent=MONTHS[state.calM]+' '+state.calY;
-  const grid=document.getElementById('calGrid');
-  const byDay={};EVENTS.filter(passesNoDate).forEach(e=>{(byDay[e.date]=byDay[e.date]||[]).push(e);});
-  let html=DOW.map(d=>'<div class="gh">'+d+'</div>').join('');
-  const first=new Date(state.calY,state.calM,1);let lead=(first.getDay()+6)%7;
-  for(let i=0;i<lead;i++)html+='<div class="cell empty"></div>';
-  const dim=new Date(state.calY,state.calM+1,0).getDate();
-  for(let d=1;d<=dim;d++){
-    const ds=state.calY+'-'+String(state.calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const evs=byDay[ds]||[];const dow=new Date(state.calY,state.calM,d).getDay();const wknd=(dow===0||dow===6);
-    let cls='cell'+(evs.length?' has':'')+(wknd?' wknd':'')+(ds===TODAY_STR?' today':'');
-    let inner='<div class="dn">'+d+'</div>';
-    if(evs.length){inner+='<div class="calcount">'+evs.length+'</div>';
-      evs.slice(0,2).forEach(e=>{inner+='<div class="ev" style="background:'+(CAT_COLORS[e.cat]||CAT_COLORS['Autre'])+'">'+e.city+'</div>';});
-      if(evs.length>2)inner+='<div class="more">+'+(evs.length-2)+'</div>';}
-    html+='<div class="'+cls+'" '+(evs.length?'data-day="'+ds+'"':'')+'>'+inner+'</div>';
-  }
-  grid.innerHTML=html;
-  grid.querySelectorAll('[data-day]').forEach(c=>c.onclick=()=>{setMapDay(c.getAttribute('data-day'));closeCal();});
-}
-function openCal(){document.getElementById('calModal').style.display='flex';renderCal();}
-function closeCal(){document.getElementById('calModal').style.display='none';}
-
 /* ---------- DISPATCH ---------- */
-function renderAll(){renderList();renderMap();updateDayTag();}
+function renderAll(){
+  if(state.selectedId!=null && !filtered().some(e=>e._id===state.selectedId)){state.selectedId=null;if(routeLayer)routeLayer.clearLayers();}
+  renderList();renderMap();updateDayTag();
+}
 function updateDayTag(){
   const t=document.getElementById('dayTag');
   if(state.selDay){t.style.display='';t.innerHTML='📅 '+fmtDayHead(state.selDay)+' ✕';t.onclick=()=>setMapDay(null);}
@@ -560,15 +502,19 @@ function buildDeps(){
     sel.innerHTML='<option value="">Tous les départements</option>'+keys.map(k=>'<option value="'+k+'">'+k+' — '+deps[k]+'</option>').join('');
     sel.onchange=e=>{state.dep=e.target.value;renderAll();};}
 }
-function setMapDay(d){state.selDay=d||null;renderAll();}
+function setMapDay(d){
+  if(state.selectedId!=null){state.selectedId=null;if(routeLayer)routeLayer.clearLayers();document.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel'));}
+  state.selDay=d||null;
+  if(d){state.preset='all';document.querySelectorAll('#datePresets button').forEach(x=>x.classList.toggle('active',x.dataset.p==='all'));}
+  renderAll();
+}
 document.getElementById('search').oninput=e=>{state.search=e.target.value;renderAll();};
 document.getElementById('dist').oninput=e=>{state.maxDist=+e.target.value;
   document.getElementById('distVal').textContent=state.maxDist>=300?'Partout':state.maxDist+' km';if(map)drawOrigin();renderAll();};
-document.getElementById('sort').onchange=e=>{state.sort=e.target.value;renderList();};
 document.getElementById('hideCancel').onchange=e=>{state.hideCancel=e.target.checked;renderAll();};
 document.getElementById('hideVM').onchange=e=>{state.hideVM=e.target.checked;renderAll();};
 document.querySelectorAll('#datePresets button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('#datePresets button').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.preset=b.dataset.p;renderAll();});
+  document.querySelectorAll('#datePresets button').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.preset=b.dataset.p;state.selDay=null;renderAll();});
 document.getElementById('dfrom').onchange=e=>{state.from=e.target.value||null;renderAll();};
 document.getElementById('dto').onchange=e=>{state.to=e.target.value||null;renderAll();};
 document.getElementById('mapDay').onchange=e=>setMapDay(e.target.value||null);
@@ -577,11 +523,11 @@ document.getElementById('mdAll').onclick=()=>setMapDay(null);
 document.getElementById('mdPrev').onclick=()=>{const ds=availDates();if(!ds.length)return;let i=state.selDay?ds.indexOf(state.selDay):0;if(i<0)i=0;i=Math.max(0,i-1);setMapDay(ds[i]);};
 document.getElementById('mdNext').onclick=()=>{const ds=availDates();if(!ds.length)return;let i=state.selDay?ds.indexOf(state.selDay):-1;i=Math.min(ds.length-1,i+1);setMapDay(ds[i]);};
 function availDates(){return [...new Set(EVENTS.filter(e=>parseD(e.date)>=TODAY).map(e=>e.date))].sort();}
-document.getElementById('calBtn').onclick=openCal;
-document.getElementById('calClose').onclick=closeCal;
-document.getElementById('calModal').onclick=e=>{if(e.target.id==='calModal')closeCal();};
-document.getElementById('calPrev').onclick=()=>{state.calM--;if(state.calM<0){state.calM=11;state.calY--;}renderCal();};
-document.getElementById('calNext').onclick=()=>{state.calM++;if(state.calM>11){state.calM=0;state.calY++;}renderCal();};
+document.getElementById('recenterBtn').onclick=()=>{
+  if(!map)return;
+  if(radiusCircle){try{map.fitBounds(radiusCircle.getBounds(),{padding:[20,20]});return;}catch(_){}}
+  map.setView(state.origin,10);
+};
 document.getElementById('reset').onclick=()=>{
   state.search='';state.dep='';state.cats=new Set(['Vide-grenier','Brocante']);state.sizes=new Set(['S','M','L']);
   state.maxDist=25;state.preset='all';state.from=null;state.to=null;state.hideCancel=false;state.hideVM=false;state.selDay=TODAY_STR;
