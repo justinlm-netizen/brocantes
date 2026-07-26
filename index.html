@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Brocanteur — Brocantes & vide-greniers de France</title>
 <meta name="theme-color" content="#b5651d">
 <meta name="description" content="Toutes les brocantes, vide-greniers et braderies de France : carte, calendrier, distances et temps de trajet depuis chez vous.">
@@ -18,52 +18,45 @@
 <style>
 :root{
   --bg:#f7f3ec; --card:#ffffff; --ink:#2b2622; --muted:#7d746a; --line:#e7ded2;
-  --accent:#b5651d; --accent-d:#8f4d13;
+  --accent:#b5651d; --accent-d:#8f4d13; --red:#e63946;
   --c-vg:#2a7de1; --c-br:#b5651d; --c-vm:#7a8b99; --c-bd:#6a4c93; --c-bo:#2a9d8f; --c-au:#9a8f80;
   --shadow:0 1px 3px rgba(60,45,25,.08),0 6px 18px rgba(60,45,25,.06);
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden}
 a{color:inherit}
 button{font-family:inherit;cursor:pointer}
 .app{display:flex;flex-direction:column;height:100%}
 
-header{background:linear-gradient(135deg,#8f4d13,#b5651d);color:#fff;padding:14px 18px;box-shadow:var(--shadow);z-index:20}
-.hrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.brand{font-weight:800;font-size:20px;letter-spacing:.2px;display:flex;align-items:center;gap:9px}
-.brand .logo{font-size:22px}
+header{background:linear-gradient(135deg,#8f4d13,#b5651d);color:#fff;padding:11px 16px;box-shadow:var(--shadow);z-index:30}
+.hrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-weight:800;font-size:19px;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
+.brand .logo{font-size:21px}
 .hsub{opacity:.9;font-size:12.5px;font-weight:500}
 .origin-pill{margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);
-  border:1px solid rgba(255,255,255,.25);padding:6px 10px;border-radius:999px;font-size:13px;backdrop-filter:blur(4px)}
+  border:1px solid rgba(255,255,255,.25);padding:5px 10px;border-radius:999px;font-size:13px}
 .origin-pill button{background:none;border:none;color:#fff;text-decoration:underline;font-size:12px;opacity:.9}
 .origin-pill button:hover{opacity:1}
 
-.tabs{display:flex;gap:4px;margin-top:12px}
-.tab{background:rgba(255,255,255,.14);color:#fff;border:none;padding:8px 16px;border-radius:10px 10px 0 0;
-  font-weight:600;font-size:14px;opacity:.85;display:flex;align-items:center;gap:7px}
-.tab.active{background:var(--bg);color:var(--accent-d);opacity:1}
-
 .body{flex:1;display:flex;min-height:0}
-.filters{width:290px;flex-shrink:0;background:var(--card);border-right:1px solid var(--line);
-  padding:16px;overflow-y:auto}
+.filters{width:280px;flex-shrink:0;background:var(--card);border-right:1px solid var(--line);padding:16px;overflow-y:auto}
 .filters h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}
-.fgroup{margin-bottom:20px}
-.search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#fbf8f3}
+.fgroup{margin-bottom:18px}
+.search{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#fbf8f3}
 .search:focus{outline:2px solid var(--accent);border-color:transparent}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--line);background:#fbf8f3;border-radius:999px;padding:5px 11px;font-size:12.5px;
-  display:flex;align-items:center;gap:6px;user-select:none;transition:.12s}
+.chip{border:1px solid var(--line);background:#fbf8f3;border-radius:999px;padding:5px 11px;font-size:12.5px;display:flex;align-items:center;gap:6px;user-select:none;transition:.12s}
 .chip .dot{width:9px;height:9px;border-radius:50%}
 .chip.off{opacity:.4}
 .chip.on{border-color:var(--accent);background:#fff;box-shadow:0 0 0 1px var(--accent) inset}
+.slider-val{font-weight:700;color:var(--accent-d)}
+input[type=range]{width:100%;accent-color:var(--accent)}
 .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .seg button{flex:1;background:#fbf8f3;border:none;padding:8px 4px;font-size:12.5px;color:var(--muted);border-right:1px solid var(--line)}
 .seg button:last-child{border-right:none}
 .seg button.active{background:var(--accent);color:#fff;font-weight:600}
-.slider-val{font-weight:700;color:var(--accent-d)}
-input[type=range]{width:100%;accent-color:var(--accent)}
 .daterow{display:flex;gap:8px}
 .daterow input{flex:1;padding:7px;border:1px solid var(--line);border-radius:8px;background:#fbf8f3;font-size:12.5px}
 .toggle{display:flex;align-items:center;gap:9px;font-size:13.5px;cursor:pointer;padding:4px 0}
@@ -71,100 +64,118 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .reset{width:100%;padding:9px;border:1px dashed var(--line);background:none;border-radius:10px;color:var(--muted);font-size:13px}
 .reset:hover{border-color:var(--accent);color:var(--accent)}
 
-.content{flex:1;min-width:0;position:relative;overflow:hidden;display:flex;flex-direction:column}
-.countbar{padding:10px 18px;font-size:13.5px;color:var(--muted);border-bottom:1px solid var(--line);
-  display:flex;align-items:center;gap:10px;background:var(--bg)}
-.countbar b{color:var(--ink)}
+.content{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+.topbar{padding:8px 14px;font-size:13.5px;color:var(--muted);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;background:var(--bg);flex-wrap:wrap}
+.topbar b{color:var(--ink)}
+.tbtn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 11px;font-size:12.5px;font-weight:600;color:var(--accent-d);display:inline-flex;align-items:center;gap:6px}
+.tbtn:hover{background:#f6ede0;border-color:var(--accent)}
 .sortsel{margin-left:auto;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.daytag{background:#f6ede0;border:1px solid var(--accent);color:var(--accent-d);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600}
+
+.split{flex:1;display:flex;min-height:0}
+.mapPane{flex:1.15 1 0;position:relative;display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}
+#map{flex:1;width:100%;min-height:0}
+.listPane{flex:1 1 0;overflow-y:auto;padding:12px 14px 40px;min-width:0;background:var(--bg)}
+
+/* map bar (one line) */
+.mapbar{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:1000;
+  background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:11px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:5px;padding:5px 7px;flex-wrap:nowrap;max-width:calc(100% - 20px)}
+.mapbar button{border:1px solid var(--line);background:#fff;border-radius:8px;height:30px;min-width:30px;padding:0 8px;color:var(--accent-d);font-size:13px;font-weight:600;flex-shrink:0;white-space:nowrap}
+.mapbar button:hover{background:#f6ede0;border-color:var(--accent)}
+.mapbar button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mapbar input[type=date]{border:1px solid var(--line);border-radius:8px;padding:4px 5px;font-size:12.5px;background:#fbf8f3;min-width:0;height:30px}
+.mapbar .ico{font-size:15px}
+
+.legend{position:absolute;bottom:12px;left:12px;background:rgba(255,255,255,.95);border:1px solid var(--line);
+  border-radius:11px;padding:9px 11px;font-size:11.5px;box-shadow:var(--shadow);z-index:600}
+.legend .li{display:flex;align-items:center;gap:7px;margin:2px 0}
+.legend .dot{width:11px;height:11px;border-radius:50%}
+.legend.mini .li{display:none}
+.legend .toghide{display:none;font-weight:700;color:var(--accent-d);cursor:pointer}
+
+/* selection info bar over map */
+.selinfo{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:900;width:calc(100% - 24px);max-width:520px;
+  background:#fff;border:1px solid var(--accent);border-radius:13px;box-shadow:0 6px 22px rgba(60,45,25,.2);padding:10px 12px}
+.selinfo .si-top{display:flex;align-items:flex-start;gap:8px}
+.selinfo .si-city{font-weight:800;font-size:15px}
+.selinfo .si-nm{font-size:12.5px;color:var(--muted)}
+.selinfo .si-route{font-size:13px;font-weight:700;color:var(--accent-d);margin-top:5px}
+.selinfo .si-x{margin-left:auto;border:none;background:none;font-size:18px;color:var(--muted);line-height:1;cursor:pointer}
+.selinfo .si-acts{display:flex;gap:7px;margin-top:9px}
+.selinfo .si-acts a{flex:1;text-align:center;text-decoration:none;font-size:13px;font-weight:700;padding:8px;border-radius:9px;color:#fff}
+.a-waze{background:#33ccff}
+.a-maps{background:#4285F4}
+.a-src{background:#efe7db;color:#6b5b45!important}
 
 /* LIST */
-.scroll{overflow-y:auto;flex:1;padding:14px 18px 40px}
-.daygroup{margin-bottom:18px}
-.dayhead{position:sticky;top:0;background:var(--bg);padding:8px 2px 8px;font-weight:700;font-size:14px;z-index:2;
-  border-bottom:2px solid var(--line);text-transform:capitalize;display:flex;align-items:baseline;gap:8px}
+.daygroup{margin-bottom:16px}
+.dayhead{position:sticky;top:0;background:var(--bg);padding:7px 2px;font-weight:700;font-size:13.5px;z-index:2;border-bottom:2px solid var(--line);text-transform:capitalize;display:flex;align-items:baseline;gap:8px}
 .dayhead .cnt{font-size:12px;color:var(--muted);font-weight:500}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;box-shadow:var(--shadow);
-  position:relative;transition:.12s;border-left:5px solid var(--c-au)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:11px;margin-top:11px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 13px;box-shadow:var(--shadow);position:relative;transition:.12s;border-left:5px solid var(--c-au);cursor:pointer}
 .card:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(60,45,25,.12),0 12px 26px rgba(60,45,25,.10)}
-.card.cancel{opacity:.62}
-.card .city{font-weight:800;font-size:16px;margin:0 0 2px}
-.card .nm{font-size:13px;color:var(--muted);margin:0 0 9px;min-height:17px}
-.badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:9px}
+.card.sel{box-shadow:0 0 0 2px var(--accent),var(--shadow);border-left-color:var(--accent)}
+.card.cancel{opacity:.6}
+.card .city{font-weight:800;font-size:15.5px;margin:0 0 2px}
+.card .nm{font-size:12.5px;color:var(--muted);margin:0 0 8px;min-height:16px}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .badge{font-size:11px;padding:3px 8px;border-radius:999px;font-weight:600;color:#fff;white-space:nowrap}
 .badge.size{background:#efe7db;color:#6b5b45}
 .badge.cxl{background:#c0392b}
-.meta{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--muted)}
+.meta{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
 .meta .r{display:flex;align-items:center;gap:6px}
 .meta .ic{width:14px;text-align:center;opacity:.8}
-.dist{position:absolute;top:12px;right:12px;font-size:12px;font-weight:700;color:var(--accent-d);
-  background:#f6ede0;padding:3px 8px;border-radius:999px}
-.acts{display:flex;gap:8px;margin-top:10px}
-.acts a{flex:1;text-align:center;font-size:12px;text-decoration:none;padding:7px;border-radius:9px;
-  border:1px solid var(--line);color:var(--accent-d);font-weight:600}
-.acts a:hover{background:#f6ede0}
+.dist{position:absolute;top:11px;right:11px;font-size:12px;font-weight:700;color:var(--accent-d);background:#f6ede0;padding:3px 8px;border-radius:999px}
+.acts{display:flex;gap:7px;margin-top:9px}
+.acts a{flex:1;text-align:center;font-size:11.5px;text-decoration:none;padding:6px;border-radius:8px;font-weight:700;color:#fff}
+.more-note{grid-column:1/-1;text-align:center;color:var(--muted);font-size:12.5px;padding:10px;border:1px dashed var(--line);border-radius:10px}
+.empty-state{text-align:center;color:var(--muted);padding:40px 16px}
+.empty-state .big{font-size:38px;margin-bottom:8px}
 
-/* MAP */
-#map{flex:1;width:100%}
-.leaflet-popup-content{margin:11px 13px;font-size:13px}
+.leaflet-popup-content{margin:10px 12px;font-size:13px}
 .pop-city{font-weight:800;font-size:15px;margin-bottom:3px}
-.pop-nm{color:#666;margin-bottom:6px}
-.pop-b{display:inline-block;font-size:11px;padding:2px 7px;border-radius:999px;color:#fff;font-weight:600;margin-right:4px}
-.pop-a{display:block;margin-top:6px;color:var(--accent-d);font-weight:600;text-decoration:none}
 
-/* CALENDAR */
-.calwrap{flex:1;overflow-y:auto;padding:16px 18px 40px}
-.calnav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px}
-.calnav button{border:1px solid var(--line);background:#fff;width:38px;height:38px;border-radius:10px;font-size:18px;color:var(--accent-d)}
-.calnav .mlabel{font-weight:800;font-size:18px;min-width:190px;text-align:center;text-transform:capitalize}
-.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;max-width:1000px;margin:0 auto}
-.gh{text-align:center;font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;padding-bottom:4px}
-.cell{background:var(--card);border:1px solid var(--line);border-radius:10px;min-height:82px;padding:6px;
-  display:flex;flex-direction:column;gap:4px;transition:.12s}
+/* CALENDAR MODAL */
+.modal{position:fixed;inset:0;background:rgba(43,38,34,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:var(--bg);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.4);width:100%;max-width:840px;max-height:90vh;overflow-y:auto;padding:16px}
+.calnav{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:12px}
+.calnav button{border:1px solid var(--line);background:#fff;width:36px;height:36px;border-radius:10px;font-size:17px;color:var(--accent-d)}
+.calnav .mlabel{font-weight:800;font-size:17px;min-width:170px;text-align:center;text-transform:capitalize}
+.calnav .cx{margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.gh{text-align:center;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;padding-bottom:4px}
+.cell{background:var(--card);border:1px solid var(--line);border-radius:9px;min-height:70px;padding:5px;display:flex;flex-direction:column;gap:3px}
 .cell.empty{background:transparent;border:none}
 .cell.has{cursor:pointer}
 .cell.has:hover{border-color:var(--accent);box-shadow:var(--shadow)}
 .cell.today{outline:2px solid var(--accent)}
-.cell.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
-.cell .dn{font-size:12.5px;font-weight:700;color:var(--muted)}
+.cell .dn{font-size:12px;font-weight:700;color:var(--muted)}
 .cell.wknd .dn{color:var(--accent-d)}
-.cell .evs{display:flex;flex-direction:column;gap:2px;overflow:hidden}
-.cell .ev{font-size:10.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  padding:1px 4px;border-radius:4px;color:#fff}
-.cell .more{font-size:10px;color:var(--muted);font-weight:600}
-.calcount{background:var(--accent);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;align-self:flex-end;margin-top:-20px}
+.cell .ev{font-size:10px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px;border-radius:4px;color:#fff}
+.cell .more{font-size:9.5px;color:var(--muted);font-weight:600}
+.cell .calcount{background:var(--accent);color:#fff;font-size:10px;font-weight:700;border-radius:999px;padding:0 6px;align-self:flex-end}
 
-.empty-state{text-align:center;color:var(--muted);padding:60px 20px}
-.empty-state .big{font-size:40px;margin-bottom:10px}
-
-.legend{position:absolute;bottom:14px;left:14px;background:rgba(255,255,255,.95);border:1px solid var(--line);
-  border-radius:12px;padding:10px 12px;font-size:12px;box-shadow:var(--shadow);z-index:500}
-.legend .li{display:flex;align-items:center;gap:7px;margin:2px 0}
-.legend .dot{width:11px;height:11px;border-radius:50%}
-
-.mapday{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:1000;
-  background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
-  display:flex;align-items:center;gap:6px;padding:6px 8px;font-size:13px;max-width:calc(100% - 24px)}
-.mapday .lbl{font-weight:700;color:var(--accent-d);font-size:12px}
-.mapday button{border:1px solid var(--line);background:#fff;border-radius:8px;width:30px;height:30px;color:var(--accent-d);font-size:17px;line-height:1;flex-shrink:0}
-.mapday button:hover{background:#f6ede0;border-color:var(--accent)}
-.mapday input[type=date]{border:1px solid var(--line);border-radius:8px;padding:5px 6px;font-size:13px;background:#fbf8f3;min-width:0}
-.mapday .clr{width:auto;padding:0 10px;font-size:12px;font-weight:600}
-.mapday .clr.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-@media(max-width:820px){ .mapday{flex-wrap:wrap;justify-content:center} .mapday .lbl{width:100%;text-align:center} }
-
-.mobile-filter-btn{display:none}
-@media(max-width:820px){
-  .filters{position:fixed;top:0;left:0;bottom:0;z-index:60;width:82%;max-width:320px;transform:translateX(-100%);
-    transition:.22s;box-shadow:0 0 40px rgba(0,0,0,.3)}
+.mobile-only{display:none}
+.backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:55}
+.backdrop.show{display:block}
+@media(max-width:860px){
+  body{overflow:auto}
+  .filters{position:fixed;top:0;left:0;bottom:0;z-index:60;width:84%;max-width:320px;transform:translateX(-100%);transition:.22s;box-shadow:0 0 40px rgba(0,0,0,.3)}
   .filters.open{transform:translateX(0)}
-  .mobile-filter-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);
-    color:var(--accent-d);font-weight:600;padding:6px 12px;border-radius:9px;font-size:13px}
-  .backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:55}
-  .backdrop.show{display:block}
+  .mobile-only{display:inline-flex}
+  .origin-pill{margin-left:0}
+  .split{flex-direction:column}
+  .mapPane{flex:none;height:46vh;border-right:none;border-bottom:1px solid var(--line)}
+  .listPane{flex:1;min-height:40vh}
   .cards{grid-template-columns:1fr}
-  .origin-pill{margin-left:0;width:100%;justify-content:center}
-  .brand{font-size:18px}
+  .mapbar{gap:3px;padding:4px 5px;top:8px}
+  .mapbar button{height:28px;min-width:28px;padding:0 6px;font-size:12px}
+  .mapbar input[type=date]{font-size:11px;height:28px;width:120px}
+  .legend{padding:6px 8px}
+  .legend.mini{padding:5px 9px}
+  .legend.mini .toghide{display:block}
 }
 </style>
 </head>
@@ -173,17 +184,12 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <header>
   <div class="hrow">
     <div class="brand"><span class="logo">🧭</span> Brocanteur</div>
-    <div class="hsub">Vide-greniers, brocantes & braderies — partout en France</div>
+    <div class="hsub">Brocantes & vide-greniers — partout en France</div>
     <div class="origin-pill">
       📍 <span id="originLabel">Plérin (22190)</span>
       <button id="geoBtn">ma position</button>
       <button id="setOriginBtn">changer</button>
     </div>
-  </div>
-  <div class="tabs">
-    <button class="tab active" data-view="list">📋 Liste</button>
-    <button class="tab" data-view="map">🗺️ Carte</button>
-    <button class="tab" data-view="cal">📅 Calendrier</button>
   </div>
 </header>
 
@@ -194,28 +200,23 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <h3>Recherche</h3>
       <input class="search" id="search" placeholder="Ville, nom d'événement…" autocomplete="off">
     </div>
-
     <div class="fgroup" id="depGroup" style="display:none">
       <h3>Département</h3>
       <select class="search" id="depSel"><option value="">Tous les départements</option></select>
     </div>
-
     <div class="fgroup">
       <h3>Type d'événement</h3>
       <div class="chips" id="catChips"></div>
     </div>
-
     <div class="fgroup">
-      <h3>Taille estimée <span title="Estimée d'après le type d'événement — le nombre exact d'exposants n'est pas publié de façon fiable." style="cursor:help;color:var(--accent)">ⓘ</span></h3>
+      <h3>Taille estimée <span title="Estimée d'après le type — le nombre exact d'exposants n'est pas publié de façon fiable." style="cursor:help;color:var(--accent)">ⓘ</span></h3>
       <div class="chips" id="sizeChips"></div>
     </div>
-
     <div class="fgroup">
-      <h3>Distance max — <span class="slider-val" id="distVal">100 km</span></h3>
-      <input type="range" id="dist" min="5" max="300" step="5" value="100">
-      <div style="font-size:11px;color:var(--muted);margin-top:2px">Glissez au maximum pour afficher partout (toute la zone couverte).</div>
+      <h3>Distance max — <span class="slider-val" id="distVal">25 km</span></h3>
+      <input type="range" id="dist" min="5" max="300" step="5" value="25">
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Au maximum = partout (toute la zone).</div>
     </div>
-
     <div class="fgroup">
       <h3>Période</h3>
       <div class="seg" id="datePresets">
@@ -228,53 +229,58 @@ input[type=range]{width:100%;accent-color:var(--accent)}
         <input type="date" id="dfrom"><input type="date" id="dto">
       </div>
     </div>
-
     <div class="fgroup">
       <label class="toggle"><input type="checkbox" id="hideCancel"> Masquer les événements annulés</label>
-      <label class="toggle"><input type="checkbox" id="hideVM"> Masquer les vide-maisons (petites ventes)</label>
+      <label class="toggle"><input type="checkbox" id="hideVM"> Masquer les vide-maisons</label>
     </div>
-
     <button class="reset" id="reset">↺ Réinitialiser les filtres</button>
-    <p style="font-size:11px;color:var(--muted);margin-top:16px;line-height:1.5">
-      Données issues de <a href="https://brocabrac.fr/" target="_blank" style="color:var(--accent-d)">brocabrac.fr</a>,
-      géocodage <a href="https://geo.api.gouv.fr" target="_blank" style="color:var(--accent-d)">geo.api.gouv.fr</a>.
-      Vérifiez toujours l'événement à la source avant de vous déplacer.
-      <br><span id="genInfo" style="opacity:.7"></span>
-    </p>
+    <p style="font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5">
+      Données <a href="https://brocabrac.fr/" target="_blank" style="color:var(--accent-d)">brocabrac.fr</a>,
+      géocodage <a href="https://geo.api.gouv.fr" target="_blank" style="color:var(--accent-d)">geo.api.gouv.fr</a>,
+      itinéraires <a href="https://project-osrm.org" target="_blank" style="color:var(--accent-d)">OSRM</a>.
+      Vérifiez l'événement à la source avant de vous déplacer.
+      <br><span id="genInfo" style="opacity:.7"></span></p>
   </aside>
 
   <main class="content">
-    <div class="countbar">
-      <button class="mobile-filter-btn" id="openFilters">⚙︎ Filtres</button>
-      <span><b id="count">0</b> événements affichés</span>
+    <div class="topbar">
+      <button class="tbtn mobile-only" id="openFilters">⚙︎ Filtres</button>
+      <span><b id="count">0</b> événements</span>
+      <span class="daytag" id="dayTag" style="display:none"></span>
+      <button class="tbtn" id="calBtn">📅 Calendrier</button>
       <select class="sortsel" id="sort">
         <option value="date">Trier par date</option>
         <option value="dist">Trier par distance</option>
       </select>
     </div>
-
-    <div class="scroll" id="listView"></div>
-    <div id="mapView" style="display:none;flex:1;position:relative">
-      <div id="mapDayCtrl" class="mapday">
-        <span class="lbl">📅 Jour</span>
-        <button id="mdPrev" title="Jour précédent">‹</button>
-        <input type="date" id="mapDay">
-        <button id="mdNext" title="Jour suivant">›</button>
-        <button class="clr" id="mdAll" title="Afficher toutes les dates">Toutes</button>
-        <button class="clr" id="mdRoutes" title="Afficher les trajets depuis mon point de départ">🛣️ Trajets</button>
+    <div class="split">
+      <div class="mapPane">
+        <div class="mapbar">
+          <button id="mdPrev" title="Jour précédent">‹</button>
+          <input type="date" id="mapDay">
+          <button id="mdNext" title="Jour suivant">›</button>
+          <button id="mdToday" title="Aujourd'hui">Auj.</button>
+          <button id="mdAll" title="Toutes les dates">Toutes</button>
+        </div>
+        <div id="map"></div>
+        <div class="legend" id="legend"></div>
+        <div class="selinfo" id="selInfo" style="display:none"></div>
       </div>
-      <div id="map"></div>
-      <div class="legend" id="legend"></div>
-    </div>
-    <div class="calwrap" id="calView" style="display:none">
-      <div class="calnav">
-        <button id="calPrev">‹</button>
-        <div class="mlabel" id="calLabel"></div>
-        <button id="calNext">›</button>
-      </div>
-      <div class="grid" id="calGrid"></div>
+      <div class="listPane" id="listView"></div>
     </div>
   </main>
+</div>
+
+<div class="modal" id="calModal" style="display:none">
+  <div class="modal-box">
+    <div class="calnav">
+      <button id="calPrev">‹</button>
+      <div class="mlabel" id="calLabel"></div>
+      <button id="calNext">›</button>
+      <button class="cx" id="calClose" title="Fermer">✕</button>
+    </div>
+    <div class="grid" id="calGrid"></div>
+  </div>
 </div>
 </div>
 
@@ -285,40 +291,31 @@ const EVENTS = [{"date": "2026-07-26", "city": "Coëtmieux", "type": "Vide-maiso
 const _now = new Date();
 const TODAY = new Date(_now.getFullYear(), _now.getMonth(), _now.getDate());
 const TODAY_STR = TODAY.getFullYear()+'-'+String(TODAY.getMonth()+1).padStart(2,'0')+'-'+String(TODAY.getDate()).padStart(2,'0');
-const CAT_COLORS = {
-  'Vide-grenier':'#2a7de1','Brocante':'#b5651d','Vide-maison':'#7a8b99',
-  'Braderie':'#6a4c93','Bourse / marché':'#2a9d8f','Autre':'#9a8f80'
-};
+const CAT_COLORS = {'Vide-grenier':'#2a7de1','Brocante':'#b5651d','Vide-maison':'#7a8b99','Braderie':'#6a4c93','Bourse / marché':'#2a9d8f','Autre':'#9a8f80'};
 const CATS = ['Vide-grenier','Brocante','Braderie','Bourse / marché','Vide-maison'];
 const SIZES = [['S','Petite'],['M','Moyenne'],['L','Grande']];
 const SIZE_LABEL = {S:'Petite',M:'Moyenne',L:'Grande'};
-const MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-const DAYS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-const DOW = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const MONTHS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const DAYS=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+const DOW=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const LIST_CAP=400;
 
 const state = {
-  view:'list', search:'', dep:'', cats:new Set(CATS.concat(['Autre'])), sizes:new Set(['S','M','L']),
-  maxDist:100, preset:'all', from:null, to:null, hideCancel:false, hideVM:false,
-  origin:[48.5467,-2.7818], originName:'Plérin (22190)', sort:'date', selDay:null,
-  showRoutes:false, calY:_now.getFullYear(), calM:_now.getMonth()
+  search:'', dep:'', cats:new Set(['Vide-grenier','Brocante']), sizes:new Set(['S','M','L']),
+  maxDist:25, preset:'all', from:null, to:null, hideCancel:false, hideVM:false,
+  origin:[48.5467,-2.7818], originName:'Plérin (22190)', sort:'date',
+  selDay:TODAY_STR, selectedId:null, calY:_now.getFullYear(), calM:_now.getMonth()
 };
 
-function hav(a,b){
-  const R=6371,dLat=(b[0]-a[0])*Math.PI/180,dLng=(b[1]-a[1])*Math.PI/180;
+function hav(a,b){const R=6371,dLat=(b[0]-a[0])*Math.PI/180,dLng=(b[1]-a[1])*Math.PI/180;
   const s=Math.sin(dLat/2)**2+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R*2*Math.asin(Math.sqrt(s));
-}
-function driveEst(km){
-  const road = km*1.3;               // approximation distance routière
-  let sp; if(road<5)sp=32; else if(road<20)sp=48; else if(road<50)sp=63; else sp=74; // km/h moyens
-  return {km:Math.round(road), min:Math.max(1,Math.round(road/sp*60))};
-}
-function fmtDur(min){ if(min>=60){ const h=Math.floor(min/60), m=min%60; return h+' h'+(m?' '+String(m).padStart(2,'0'):''); } return min+' min'; }
-function recomputeDist(){ EVENTS.forEach(e=>{ e.dist=(e.lat!=null)?hav(state.origin,[e.lat,e.lng]):null; e.drive=(e.dist!=null)?driveEst(e.dist):null; }); }
-recomputeDist();
-
-function parseD(s){ return new Date(s+'T00:00:00'); }
-function fmtDayHead(s){ const d=parseD(s); return DAYS[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear(); }
+  return R*2*Math.asin(Math.sqrt(s));}
+function driveEst(km){const road=km*1.3;let sp;if(road<5)sp=32;else if(road<20)sp=48;else if(road<50)sp=63;else sp=74;
+  return {km:Math.round(road),min:Math.max(1,Math.round(road/sp*60))};}
+function fmtDur(min){if(min>=60){const h=Math.floor(min/60),m=min%60;return h+' h'+(m?' '+String(m).padStart(2,'0'):'');}return min+' min';}
+function recomputeDist(){EVENTS.forEach(e=>{e.dist=(e.lat!=null)?hav(state.origin,[e.lat,e.lng]):null;e.drive=(e.dist!=null)?driveEst(e.dist):null;});}
+function parseD(s){return new Date(s+'T00:00:00');}
+function fmtDayHead(s){const d=parseD(s);return DAYS[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();}
 
 function passes(e){
   if(parseD(e.date) < TODAY) return false;
@@ -327,338 +324,303 @@ function passes(e){
   if(!state.sizes.has(e.size)) return false;
   if(state.hideCancel && e.cancelled) return false;
   if(state.hideVM && e.cat==='Vide-maison') return false;
-  if(e.dist!=null && state.maxDist<300 && e.dist > state.maxDist) return false;
-  if(state.search){
-    const q=state.search.toLowerCase();
-    if(!((e.city||'').toLowerCase().includes(q)||(e.name||'').toLowerCase().includes(q)||(e.type||'').toLowerCase().includes(q))) return false;
-  }
+  if(e.dist!=null && state.maxDist<300 && e.dist>state.maxDist) return false;
+  if(state.search){const q=state.search.toLowerCase();
+    if(!((e.city||'').toLowerCase().includes(q)||(e.name||'').toLowerCase().includes(q)||(e.type||'').toLowerCase().includes(q))) return false;}
   const d=parseD(e.date);
   if(state.from && d<parseD(state.from)) return false;
   if(state.to && d>parseD(state.to)) return false;
-  if(state.preset==='7'){ const lim=new Date(TODAY); lim.setDate(lim.getDate()+7); if(d>lim) return false; }
-  if(state.preset==='30'){ const lim=new Date(TODAY); lim.setDate(lim.getDate()+30); if(d>lim) return false; }
-  if(state.preset==='wknd'){ const dow=d.getDay(); if(dow!==0&&dow!==6) return false; const lim=new Date(TODAY); lim.setDate(lim.getDate()+9); if(d>lim) return false; }
+  if(state.preset==='7'){const l=new Date(TODAY);l.setDate(l.getDate()+7);if(d>l)return false;}
+  if(state.preset==='30'){const l=new Date(TODAY);l.setDate(l.getDate()+30);if(d>l)return false;}
+  if(state.preset==='wknd'){const w=d.getDay();if(w!==0&&w!==6)return false;const l=new Date(TODAY);l.setDate(l.getDate()+9);if(d>l)return false;}
   if(state.selDay && e.date!==state.selDay) return false;
   return true;
 }
 function filtered(){
   let a=EVENTS.filter(passes);
   a.sort((x,y)=> state.sort==='dist'
-    ? ((x.dist??1e9)-(y.dist??1e9)) || x.date.localeCompare(y.date)
-    : x.date.localeCompare(y.date) || ((x.dist??1e9)-(y.dist??1e9)));
+    ? ((x.dist??1e9)-(y.dist??1e9))||x.date.localeCompare(y.date)
+    : x.date.localeCompare(y.date)||((x.dist??1e9)-(y.dist??1e9)));
   return a;
 }
 
 /* ---------- LIST ---------- */
+function actionLinks(e){
+  const dest=(e.lat!=null)?(e.lat+','+e.lng):encodeURIComponent((e.address?e.address+', ':'')+e.city+' '+(e.dep||''));
+  const waze=(e.lat!=null)?'https://waze.com/ul?ll='+e.lat+','+e.lng+'&navigate=yes':'https://waze.com/ul?q='+dest;
+  const maps='https://www.google.com/maps/dir/?api=1&destination='+dest+'&travelmode=driving';
+  return '<a class="a-waze" href="'+waze+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">Waze</a>'+
+         '<a class="a-maps" href="'+maps+'" target="_blank" rel="noopener" onclick="event.stopPropagation()">Maps</a>';
+}
+function cardHTML(e){
+  const col=CAT_COLORS[e.cat]||CAT_COLORS['Autre'];
+  const dist=e.drive!=null?'<span class="dist">🚗 '+fmtDur(e.drive.min)+'</span>':'';
+  return '<div class="card'+(e.cancelled?' cancel':'')+(state.selectedId===e._id?' sel':'')+'" data-id="'+e._id+'" style="border-left-color:'+col+'">'+dist+
+    '<p class="city">'+e.city+(e.dep&&e.dep!=='22'?' <span style="font-size:11px;color:#aaa;font-weight:500">('+e.dep+')</span>':'')+'</p>'+
+    '<p class="nm">'+(e.name||e.type)+'</p>'+
+    '<div class="badges"><span class="badge" style="background:'+col+'">'+e.cat+'</span>'+
+      '<span class="badge size">'+SIZE_LABEL[e.size]+'</span>'+(e.cancelled?'<span class="badge cxl">Annulé</span>':'')+'</div>'+
+    '<div class="meta"><div class="r"><span class="ic">📅</span>'+fmtDayHead(e.date)+'</div>'+
+      (e.drive!=null?'<div class="r"><span class="ic">🧭</span>'+e.drive.km+' km · ~'+fmtDur(e.drive.min)+' <span style="opacity:.6">(estimé)</span></div>':'')+
+      (e.address?'<div class="r"><span class="ic">📍</span>'+e.address+'</div>':'')+'</div>'+
+    '<div class="acts">'+actionLinks(e)+'</div></div>';
+}
 function renderList(){
   const wrap=document.getElementById('listView');
   const list=filtered();
   document.getElementById('count').textContent=list.length;
-  if(!list.length){ wrap.innerHTML='<div class="empty-state"><div class="big">🔍</div>Aucun événement ne correspond à vos filtres.<br>Essayez d\'élargir la distance ou la période.</div>'; return; }
-  let html='', curDay=null;
+  if(!list.length){wrap.innerHTML='<div class="empty-state"><div class="big">🔍</div>Aucun événement.<br>Élargissez la distance, la date ou les types.</div>';return;}
+  const capped=list.slice(0,LIST_CAP);
+  let html='',cur=null;
   if(state.sort==='dist'){
-    html='<div class="cards">'+list.map(cardHTML).join('')+'</div>';
+    html='<div class="cards">'+capped.map(cardHTML).join('')+(list.length>LIST_CAP?'<div class="more-note">… et '+(list.length-LIST_CAP)+' autres — affinez les filtres.</div>':'')+'</div>';
   } else {
-    list.forEach(e=>{
-      if(e.date!==curDay){
-        if(curDay!==null) html+='</div></div>';
-        curDay=e.date;
-        const n=list.filter(x=>x.date===curDay).length;
-        html+='<div class="daygroup"><div class="dayhead">'+fmtDayHead(e.date)+'<span class="cnt">'+n+' événement'+(n>1?'s':'')+'</span></div><div class="cards">';
-      }
+    capped.forEach(e=>{
+      if(e.date!==cur){if(cur!==null)html+='</div></div>';cur=e.date;
+        const n=capped.filter(x=>x.date===cur).length;
+        html+='<div class="daygroup"><div class="dayhead">'+fmtDayHead(e.date)+'<span class="cnt">'+n+'</span></div><div class="cards">';}
       html+=cardHTML(e);
     });
-    if(curDay!==null) html+='</div></div>';
+    if(cur!==null)html+='</div></div>';
+    if(list.length>LIST_CAP)html+='<div class="more-note">… et '+(list.length-LIST_CAP)+' autres — affinez les filtres.</div>';
   }
   wrap.innerHTML=html;
-}
-function cardHTML(e){
-  const col=CAT_COLORS[e.cat]||CAT_COLORS['Autre'];
-  const q=encodeURIComponent((e.address? e.address+', ':'')+e.city+' 22');
-  const maps='https://www.google.com/maps/search/?api=1&query='+q;
-  const dist=e.drive!=null? '<span class="dist">🚗 '+fmtDur(e.drive.min)+'</span>':'';
-  return '<div class="card'+(e.cancelled?' cancel':'')+'" style="border-left-color:'+col+'">'+dist+
-    '<p class="city">'+e.city+'</p>'+
-    '<p class="nm">'+(e.name||e.type)+'</p>'+
-    '<div class="badges">'+
-      '<span class="badge" style="background:'+col+'">'+e.cat+'</span>'+
-      '<span class="badge size">'+SIZE_LABEL[e.size]+'</span>'+
-      (e.cancelled?'<span class="badge cxl">Annulé</span>':'')+
-    '</div>'+
-    '<div class="meta">'+
-      '<div class="r"><span class="ic">📅</span>'+fmtDayHead(e.date)+'</div>'+
-      (e.drive!=null?'<div class="r"><span class="ic">🧭</span>'+e.drive.km+' km · ~'+fmtDur(e.drive.min)+' de route <span style="opacity:.6">(estimé)</span></div>':'')+
-      (e.address?'<div class="r"><span class="ic">📍</span>'+e.address+(e.dep&&e.dep!=='22'?' — '+e.city+' ('+e.dep+')':'')+'</div>':'')+
-    '</div>'+
-    '<div class="acts"><a href="'+maps+'" target="_blank">🧭 Itinéraire</a>'+
-      '<a href="https://brocabrac.fr/22/" target="_blank">🔗 Source</a></div>'+
-  '</div>';
+  wrap.querySelectorAll('.card').forEach(c=>c.onclick=()=>selectEvent(+c.getAttribute('data-id'),'list'));
 }
 
 /* ---------- MAP ---------- */
-let map, cluster, originMarker, radiusCircle, routeLayer, highlightLayer;
+let map,cluster,originMarker,radiusCircle,routeLayer,markersById={};
 function initMap(){
   map=L.map('map',{zoomControl:true}).setView(state.origin,9);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
   routeLayer=L.layerGroup().addTo(map);
-  highlightLayer=L.layerGroup().addTo(map);
   cluster=L.markerClusterGroup({maxClusterRadius:45,spiderfyOnMaxZoom:true});
   map.addLayer(cluster);
   const leg=document.getElementById('legend');
-  leg.innerHTML='<div style="font-weight:700;margin-bottom:4px">Type</div>'+
+  leg.innerHTML='<div class="toghide" onclick="this.parentNode.classList.toggle(\'mini\')">Légende ▾</div><div style="font-weight:700;margin-bottom:3px">Type</div>'+
     CATS.concat(['Autre']).map(c=>'<div class="li"><span class="dot" style="background:'+CAT_COLORS[c]+'"></span>'+c+'</div>').join('');
+  if(window.innerWidth<=860) leg.classList.add('mini');
 }
-function pinIcon(col,cxl){
-  return L.divIcon({className:'',iconSize:[20,20],iconAnchor:[10,10],
-    html:'<div style="width:18px;height:18px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:'+col+
-      ';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);'+(cxl?'opacity:.5':'')+'"></div>'});
+function pinIcon(col,cxl,sel){
+  const sc=sel?1.35:1;
+  return L.divIcon({className:'',iconSize:[20*sc,20*sc],iconAnchor:[10*sc,10*sc],
+    html:'<div style="width:'+(18*sc)+'px;height:'+(18*sc)+'px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:'+col+';border:'+(sel?3:2)+'px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);'+(cxl?'opacity:.5':'')+'"></div>'});
 }
 function renderMap(){
-  if(typeof L==='undefined'){
-    document.getElementById('map').innerHTML='<div class="empty-state" style="padding-top:90px"><div class="big">🗺️</div>La carte n\'a pas pu se charger.<br>Vérifiez votre connexion internet puis rechargez la page.<br><br>Les vues <b>Liste</b> et <b>Calendrier</b> fonctionnent hors-ligne.</div>';
-    return;
-  }
-  if(!map){ initMap(); }
-  cluster.clearLayers();
-  if(highlightLayer) highlightLayer.clearLayers();
+  if(typeof L==='undefined'){document.getElementById('map').innerHTML='<div class="empty-state" style="padding-top:60px"><div class="big">🗺️</div>La carte n\'a pas pu se charger.<br>Vérifiez votre connexion et rechargez.</div>';return;}
+  if(!map)initMap();
+  cluster.clearLayers();markersById={};
   const list=filtered().filter(e=>e.lat!=null);
   const jit={};
   list.forEach(e=>{
-    const key=e.lat+','+e.lng; jit[key]=(jit[key]||0)+1; const n=jit[key];
-    const off = n>1 ? 0.004*Math.sqrt(n) : 0;
-    const ang = n*2.4;
-    const lat=e.lat+off*Math.cos(ang), lng=e.lng+off*Math.sin(ang);
+    const key=e.lat+','+e.lng;jit[key]=(jit[key]||0)+1;const n=jit[key];
+    const off=n>1?0.004*Math.sqrt(n):0,ang=n*2.4;
+    const lat=e.lat+off*Math.cos(ang),lng=e.lng+off*Math.sin(ang);
     const col=CAT_COLORS[e.cat]||CAT_COLORS['Autre'];
-    const q=encodeURIComponent((e.address? e.address+', ':'')+e.city+' 22');
-    const m=L.marker([lat,lng],{icon:pinIcon(col,e.cancelled)});
-    m.bindPopup('<div class="pop-city">'+e.city+(e.dep&&e.dep!=='22'?' <span style="font-size:11px;color:#999">('+e.dep+')</span>':'')+'</div>'+
-      '<div class="pop-nm">'+(e.name||e.type)+'</div>'+
-      '<span class="pop-b" style="background:'+col+'">'+e.cat+'</span>'+
-      '<span class="pop-b" style="background:#efe7db;color:#6b5b45">'+SIZE_LABEL[e.size]+'</span>'+
-      (e.cancelled?'<span class="pop-b" style="background:#c0392b">Annulé</span>':'')+
-      (e.drive!=null?'<div style="margin-top:7px;font-size:13px;font-weight:700;color:#8f4d13">🚗 '+e.drive.km+' km · ~'+fmtDur(e.drive.min)+' de route <span style="font-weight:400;opacity:.6">(estimé)</span></div>':'')+
-      '<div style="margin-top:5px;font-size:12px">📅 '+fmtDayHead(e.date)+'</div>'+
-      (e.address?'<div style="font-size:12px;color:#666">📍 '+e.address+'</div>':'')+
-      '<a class="pop-a" href="https://www.google.com/maps/search/?api=1&query='+q+'" target="_blank">🧭 Itinéraire</a>');
-    m.on('click',()=>highlightRoute(e));
-    cluster.addLayer(m);
+    const m=L.marker([lat,lng],{icon:pinIcon(col,e.cancelled,state.selectedId===e._id)});
+    m._eid=e._id;m._pos=[lat,lng];
+    m.on('click',()=>selectEvent(e._id,'map'));
+    cluster.addLayer(m);markersById[e._id]=m;
   });
   drawOrigin();
-  drawRoutes();
-}
-function drawRoutes(){
-  if(!routeLayer) return;
-  routeLayer.clearLayers();
-  const btn=document.getElementById('mdRoutes'); if(btn) btn.classList.toggle('active',state.showRoutes);
-  if(!state.showRoutes) return;
-  filtered().filter(e=>e.lat!=null).forEach(e=>{
-    L.polyline([state.origin,[e.lat,e.lng]],{color:'#8f4d13',weight:1.4,opacity:.32,dashArray:'4,6'}).addTo(routeLayer);
-  });
-}
-function highlightRoute(e){
-  if(!highlightLayer) return;
-  highlightLayer.clearLayers();
-  if(e.lat==null) return;
-  L.polyline([state.origin,[e.lat,e.lng]],{color:'#e63946',weight:3.5,opacity:.9}).addTo(highlightLayer);
 }
 function drawOrigin(){
-  if(originMarker) map.removeLayer(originMarker);
-  if(radiusCircle) map.removeLayer(radiusCircle);
+  if(originMarker)map.removeLayer(originMarker);
+  if(radiusCircle)map.removeLayer(radiusCircle);
   originMarker=L.marker(state.origin,{icon:L.divIcon({className:'',iconSize:[26,26],iconAnchor:[13,13],
     html:'<div style="width:22px;height:22px;border-radius:50%;background:#e63946;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.5)"></div>'})})
     .addTo(map).bindPopup('<b>Point de départ</b><br>'+state.originName);
-  if(state.maxDist<300) radiusCircle=L.circle(state.origin,{radius:state.maxDist*1000,color:'#b5651d',weight:1,fillColor:'#b5651d',fillOpacity:.05,dashArray:'5,6'}).addTo(map);
+  if(state.maxDist<300)radiusCircle=L.circle(state.origin,{radius:state.maxDist*1000,color:'#b5651d',weight:1,fillColor:'#b5651d',fillOpacity:.05,dashArray:'5,6'}).addTo(map);
 }
 
-/* ---------- CALENDAR ---------- */
+/* ---------- SELECTION + ROUTE ---------- */
+let routeToken=0;
+function selectEvent(id,source){
+  state.selectedId=id;
+  const e=EVENTS.find(x=>x._id===id);
+  if(!e)return;
+  // list highlight
+  document.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel'));
+  const card=document.querySelector('.card[data-id="'+id+'"]');
+  if(card){card.classList.add('sel');if(source==='map')card.scrollIntoView({block:'nearest',behavior:'smooth'});}
+  // map marker highlight (rebuild icons quickly)
+  if(map){
+    Object.entries(markersById).forEach(([k,m])=>{
+      const ev=EVENTS.find(x=>x._id===+k);const col=CAT_COLORS[ev.cat]||CAT_COLORS['Autre'];
+      m.setIcon(pinIcon(col,ev.cancelled,+k===id));
+    });
+    const mk=markersById[id];
+    if(mk){ if(source==='list'){ cluster.zoomToShowLayer(mk,()=>{mk.openPopup&&null; map.panTo(mk._pos);}); } }
+  }
+  showSelInfo(e);
+  drawRoute(e);
+}
+function showSelInfo(e){
+  const box=document.getElementById('selInfo');
+  const col=CAT_COLORS[e.cat]||CAT_COLORS['Autre'];
+  box.innerHTML='<div class="si-top"><div><div class="si-city">'+e.city+'</div><div class="si-nm">'+(e.name||e.type)+' · '+fmtDayHead(e.date)+'</div>'+
+    '<div class="si-route" id="siRoute">🚗 '+(e.drive?e.drive.km+' km · ~'+fmtDur(e.drive.min)+' (estimé)':'—')+'</div></div>'+
+    '<button class="si-x" onclick="clearSelection()">✕</button></div>'+
+    '<div class="si-acts">'+actionLinks(e)+'<a class="a-src" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((e.address?e.address+', ':'')+e.city+' '+(e.dep||''))+'" target="_blank" rel="noopener">Voir</a></div>';
+  box.style.display='block';
+}
+function clearSelection(){
+  state.selectedId=null;
+  document.getElementById('selInfo').style.display='none';
+  if(routeLayer)routeLayer.clearLayers();
+  document.querySelectorAll('.card.sel').forEach(c=>c.classList.remove('sel'));
+  if(map)renderMap();
+}
+async function drawRoute(e){
+  if(!routeLayer)return;
+  routeLayer.clearLayers();
+  if(e.lat==null)return;
+  const o=state.origin, tok=++routeToken;
+  // fallback straight line immediately
+  const straight=L.polyline([o,[e.lat,e.lng]],{color:'#e63946',weight:2.5,opacity:.5,dashArray:'6,7'}).addTo(routeLayer);
+  try{
+    const url='https://router.project-osrm.org/route/v1/driving/'+o[1]+','+o[0]+';'+e.lng+','+e.lat+'?overview=full&geometries=geojson';
+    const r=await fetch(url);const j=await r.json();
+    if(tok!==routeToken)return; // superseded
+    if(j.routes&&j.routes[0]){
+      routeLayer.clearLayers();
+      const coords=j.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+      L.polyline(coords,{color:'#e63946',weight:4.5,opacity:.9}).addTo(routeLayer);
+      L.polyline(coords,{color:'#fff',weight:1.4,opacity:.6}).addTo(routeLayer);
+      const min=Math.round(j.routes[0].duration/60),km=j.routes[0].distance/1000;
+      const el=document.getElementById('siRoute');
+      if(el)el.innerHTML='🚗 '+km.toFixed(0)+' km · '+fmtDur(min)+' <span style="opacity:.6;font-weight:400">par la route</span>';
+      try{map.fitBounds(L.latLngBounds(coords).pad(0.15),{maxZoom:12});}catch(_){}
+    }
+  }catch(err){/* garde la ligne droite + estimation */}
+}
+
+/* ---------- CALENDAR MODAL ---------- */
+function passesNoDate(e){
+  if(parseD(e.date)<TODAY)return false;
+  if(state.dep&&e.dep!==state.dep)return false;
+  if(!state.cats.has(e.cat))return false;
+  if(!state.sizes.has(e.size))return false;
+  if(state.hideCancel&&e.cancelled)return false;
+  if(state.hideVM&&e.cat==='Vide-maison')return false;
+  if(e.dist!=null&&state.maxDist<300&&e.dist>state.maxDist)return false;
+  if(state.search){const q=state.search.toLowerCase();
+    if(!((e.city||'').toLowerCase().includes(q)||(e.name||'').toLowerCase().includes(q)||(e.type||'').toLowerCase().includes(q)))return false;}
+  return true;
+}
 function renderCal(){
   document.getElementById('calLabel').textContent=MONTHS[state.calM]+' '+state.calY;
   const grid=document.getElementById('calGrid');
-  const byDay={};
-  EVENTS.filter(e=>{ // apply all filters except selDay & date presets so month view is complete but respects type/size/dist
-    const s2=Object.assign({},state,{selDay:null,preset:'all',from:null,to:null});
-    return passesWith(e,s2);
-  }).forEach(e=>{ (byDay[e.date]=byDay[e.date]||[]).push(e); });
+  const byDay={};EVENTS.filter(passesNoDate).forEach(e=>{(byDay[e.date]=byDay[e.date]||[]).push(e);});
   let html=DOW.map(d=>'<div class="gh">'+d+'</div>').join('');
-  const first=new Date(state.calY,state.calM,1);
-  let lead=(first.getDay()+6)%7; // Monday-first
-  for(let i=0;i<lead;i++) html+='<div class="cell empty"></div>';
+  const first=new Date(state.calY,state.calM,1);let lead=(first.getDay()+6)%7;
+  for(let i=0;i<lead;i++)html+='<div class="cell empty"></div>';
   const dim=new Date(state.calY,state.calM+1,0).getDate();
   for(let d=1;d<=dim;d++){
     const ds=state.calY+'-'+String(state.calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-    const evs=byDay[ds]||[];
-    const dow=new Date(state.calY,state.calM,d).getDay();
-    const wknd=(dow===0||dow===6);
-    const isToday=(ds===TODAY_STR);
-    let cls='cell'+(evs.length?' has':'')+(wknd?' wknd':'')+(isToday?' today':'')+(state.selDay===ds?' sel':'');
+    const evs=byDay[ds]||[];const dow=new Date(state.calY,state.calM,d).getDay();const wknd=(dow===0||dow===6);
+    let cls='cell'+(evs.length?' has':'')+(wknd?' wknd':'')+(ds===TODAY_STR?' today':'');
     let inner='<div class="dn">'+d+'</div>';
-    if(evs.length){
-      inner+='<div class="calcount">'+evs.length+'</div><div class="evs">';
-      evs.slice(0,3).forEach(e=>{ inner+='<div class="ev" style="background:'+(CAT_COLORS[e.cat]||CAT_COLORS['Autre'])+'">'+e.city+'</div>'; });
-      if(evs.length>3) inner+='<div class="more">+'+(evs.length-3)+' autres</div>';
-      inner+='</div>';
-    }
+    if(evs.length){inner+='<div class="calcount">'+evs.length+'</div>';
+      evs.slice(0,2).forEach(e=>{inner+='<div class="ev" style="background:'+(CAT_COLORS[e.cat]||CAT_COLORS['Autre'])+'">'+e.city+'</div>';});
+      if(evs.length>2)inner+='<div class="more">+'+(evs.length-2)+'</div>';}
     html+='<div class="'+cls+'" '+(evs.length?'data-day="'+ds+'"':'')+'>'+inner+'</div>';
   }
   grid.innerHTML=html;
-  grid.querySelectorAll('[data-day]').forEach(c=>c.onclick=()=>{
-    state.selDay=c.getAttribute('data-day');
-    switchView('list');
-  });
+  grid.querySelectorAll('[data-day]').forEach(c=>c.onclick=()=>{setMapDay(c.getAttribute('data-day'));closeCal();});
 }
-function passesWith(e,s){
-  if(parseD(e.date) < TODAY) return false;
-  if(s.dep && e.dep!==s.dep) return false;
-  if(!s.cats.has(e.cat)) return false;
-  if(!s.sizes.has(e.size)) return false;
-  if(s.hideCancel && e.cancelled) return false;
-  if(s.hideVM && e.cat==='Vide-maison') return false;
-  if(e.dist!=null && s.maxDist<300 && e.dist > s.maxDist) return false;
-  if(s.search){ const q=s.search.toLowerCase();
-    if(!((e.city||'').toLowerCase().includes(q)||(e.name||'').toLowerCase().includes(q)||(e.type||'').toLowerCase().includes(q))) return false; }
-  return true;
-}
+function openCal(){document.getElementById('calModal').style.display='flex';renderCal();}
+function closeCal(){document.getElementById('calModal').style.display='none';}
 
-/* ---------- RENDER DISPATCH ---------- */
-function renderAll(){
-  if(state.view==='list') renderList();
-  else if(state.view==='map') renderMap();
-  else renderCal();
-  // selDay banner in countbar
-}
-function switchView(v){
-  state.view=v;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.view===v));
-  document.getElementById('listView').style.display=v==='list'?'block':'none';
-  document.getElementById('mapView').style.display=v==='map'?'flex':'none';
-  document.getElementById('calView').style.display=v==='cal'?'block':'none';
-  if(v==='map' && map) setTimeout(()=>map.invalidateSize(),60);
-  renderAll();
-  updateSelDayBar();
+/* ---------- DISPATCH ---------- */
+function renderAll(){renderList();renderMap();updateDayTag();}
+function updateDayTag(){
+  const t=document.getElementById('dayTag');
+  if(state.selDay){t.style.display='';t.innerHTML='📅 '+fmtDayHead(state.selDay)+' ✕';t.onclick=()=>setMapDay(null);}
+  else t.style.display='none';
+  const mi=document.getElementById('mapDay');if(mi)mi.value=state.selDay||'';
+  document.getElementById('mdToday').classList.toggle('active',state.selDay===TODAY_STR);
 }
 
 /* ---------- CONTROLS ---------- */
 function buildChips(){
   const cc=document.getElementById('catChips');
-  cc.innerHTML=CATS.concat(['Autre']).map(c=>'<button class="chip on" data-cat="'+c+'"><span class="dot" style="background:'+CAT_COLORS[c]+'"></span>'+c+'</button>').join('');
-  cc.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{
-    const c=ch.dataset.cat; if(state.cats.has(c)){state.cats.delete(c);ch.classList.replace('on','off');}
-    else{state.cats.add(c);ch.classList.replace('off','on');} renderAll();
-  });
+  cc.innerHTML=CATS.concat(['Autre']).map(c=>'<button class="chip '+(state.cats.has(c)?'on':'off')+'" data-cat="'+c+'"><span class="dot" style="background:'+CAT_COLORS[c]+'"></span>'+c+'</button>').join('');
+  cc.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{const c=ch.dataset.cat;
+    if(state.cats.has(c)){state.cats.delete(c);ch.classList.replace('on','off');}else{state.cats.add(c);ch.classList.replace('off','on');}renderAll();});
   const sc=document.getElementById('sizeChips');
-  sc.innerHTML=SIZES.map(([k,l])=>'<button class="chip on" data-sz="'+k+'">'+l+'</button>').join('');
-  sc.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{
-    const s=ch.dataset.sz; if(state.sizes.has(s)){state.sizes.delete(s);ch.classList.replace('on','off');}
-    else{state.sizes.add(s);ch.classList.replace('off','on');} renderAll();
-  });
+  sc.innerHTML=SIZES.map(([k,l])=>'<button class="chip '+(state.sizes.has(k)?'on':'off')+'" data-sz="'+k+'">'+l+'</button>').join('');
+  sc.querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{const s=ch.dataset.sz;
+    if(state.sizes.has(s)){state.sizes.delete(s);ch.classList.replace('on','off');}else{state.sizes.add(s);ch.classList.replace('off','on');}renderAll();});
 }
-function updateSelDayBar(){
-  const bar=document.getElementById('count').parentElement.parentElement;
-  let ex=document.getElementById('selDayTag');
-  if(state.selDay){
-    if(!ex){ ex=document.createElement('button'); ex.id='selDayTag';
-      ex.style.cssText='background:#f6ede0;border:1px solid var(--accent);color:var(--accent-d);border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:600';
-      document.querySelector('.countbar').insertBefore(ex, document.getElementById('sort')); }
-    ex.textContent='📅 '+fmtDayHead(state.selDay)+' ✕';
-    ex.onclick=()=>{ state.selDay=null; updateSelDayBar(); renderAll(); };
-  } else if(ex){ ex.remove(); }
-  const mi=document.getElementById('mapDay'); if(mi) mi.value=state.selDay||'';
+function buildDeps(){
+  const deps={};EVENTS.forEach(e=>{if(e.dep)deps[e.dep]=e.depname||e.dep;});
+  const keys=Object.keys(deps).sort();const sel=document.getElementById('depSel');
+  if(keys.length>1){document.getElementById('depGroup').style.display='';
+    sel.innerHTML='<option value="">Tous les départements</option>'+keys.map(k=>'<option value="'+k+'">'+k+' — '+deps[k]+'</option>').join('');
+    sel.onchange=e=>{state.dep=e.target.value;renderAll();};}
 }
-
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>switchView(t.dataset.view));
+function setMapDay(d){state.selDay=d||null;renderAll();}
 document.getElementById('search').oninput=e=>{state.search=e.target.value;renderAll();};
 document.getElementById('dist').oninput=e=>{state.maxDist=+e.target.value;
-  document.getElementById('distVal').textContent=state.maxDist>=300?'Partout':state.maxDist+' km'; if(map&&state.view==='map')drawOrigin(); renderAll();};
-document.getElementById('sort').onchange=e=>{state.sort=e.target.value;renderAll();};
+  document.getElementById('distVal').textContent=state.maxDist>=300?'Partout':state.maxDist+' km';if(map)drawOrigin();renderAll();};
+document.getElementById('sort').onchange=e=>{state.sort=e.target.value;renderList();};
 document.getElementById('hideCancel').onchange=e=>{state.hideCancel=e.target.checked;renderAll();};
 document.getElementById('hideVM').onchange=e=>{state.hideVM=e.target.checked;renderAll();};
 document.querySelectorAll('#datePresets button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('#datePresets button').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); state.preset=b.dataset.p; renderAll();
-});
+  document.querySelectorAll('#datePresets button').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.preset=b.dataset.p;renderAll();});
 document.getElementById('dfrom').onchange=e=>{state.from=e.target.value||null;renderAll();};
 document.getElementById('dto').onchange=e=>{state.to=e.target.value||null;renderAll();};
+document.getElementById('mapDay').onchange=e=>setMapDay(e.target.value||null);
+document.getElementById('mdToday').onclick=()=>setMapDay(TODAY_STR);
+document.getElementById('mdAll').onclick=()=>setMapDay(null);
+document.getElementById('mdPrev').onclick=()=>{const ds=availDates();if(!ds.length)return;let i=state.selDay?ds.indexOf(state.selDay):0;if(i<0)i=0;i=Math.max(0,i-1);setMapDay(ds[i]);};
+document.getElementById('mdNext').onclick=()=>{const ds=availDates();if(!ds.length)return;let i=state.selDay?ds.indexOf(state.selDay):-1;i=Math.min(ds.length-1,i+1);setMapDay(ds[i]);};
+function availDates(){return [...new Set(EVENTS.filter(e=>parseD(e.date)>=TODAY).map(e=>e.date))].sort();}
+document.getElementById('calBtn').onclick=openCal;
+document.getElementById('calClose').onclick=closeCal;
+document.getElementById('calModal').onclick=e=>{if(e.target.id==='calModal')closeCal();};
+document.getElementById('calPrev').onclick=()=>{state.calM--;if(state.calM<0){state.calM=11;state.calY--;}renderCal();};
+document.getElementById('calNext').onclick=()=>{state.calM++;if(state.calM>11){state.calM=0;state.calY++;}renderCal();};
 document.getElementById('reset').onclick=()=>{
-  state.search='';state.dep='';state.cats=new Set(CATS.concat(['Autre']));state.sizes=new Set(['S','M','L']);
-  state.maxDist=100;state.preset='all';state.from=null;state.to=null;state.hideCancel=false;state.hideVM=false;state.selDay=null;
-  document.getElementById('search').value='';document.getElementById('dist').value=100;document.getElementById('distVal').textContent='100 km';
-  const _ds=document.getElementById('depSel'); if(_ds) _ds.value='';
+  state.search='';state.dep='';state.cats=new Set(['Vide-grenier','Brocante']);state.sizes=new Set(['S','M','L']);
+  state.maxDist=25;state.preset='all';state.from=null;state.to=null;state.hideCancel=false;state.hideVM=false;state.selDay=TODAY_STR;
+  document.getElementById('search').value='';document.getElementById('dist').value=25;document.getElementById('distVal').textContent='25 km';
   document.getElementById('dfrom').value='';document.getElementById('dto').value='';
   document.getElementById('hideCancel').checked=false;document.getElementById('hideVM').checked=false;
   document.querySelectorAll('#datePresets button').forEach(x=>x.classList.toggle('active',x.dataset.p==='all'));
-  document.querySelectorAll('#catChips .chip,#sizeChips .chip').forEach(c=>c.classList.replace('off','on'));
-  updateSelDayBar(); if(map&&state.view==='map')drawOrigin(); renderAll();
+  const ds=document.getElementById('depSel');if(ds)ds.value='';
+  clearSelection();buildChips();if(map)drawOrigin();renderAll();
 };
-document.getElementById('calPrev').onclick=()=>{ state.calM--; if(state.calM<0){state.calM=11;state.calY--;} renderCal(); };
-document.getElementById('calNext').onclick=()=>{ state.calM++; if(state.calM>11){state.calM=0;state.calY++;} renderCal(); };
-
 document.getElementById('geoBtn').onclick=()=>{
   if(!navigator.geolocation){alert('Géolocalisation non disponible');return;}
-  navigator.geolocation.getCurrentPosition(p=>{
-    state.origin=[p.coords.latitude,p.coords.longitude];state.originName='Ma position';
-    document.getElementById('originLabel').textContent='Ma position';
-    recomputeDist(); if(map){map.setView(state.origin,10);drawOrigin();} renderAll();
-  },()=>alert('Impossible d\'obtenir votre position.'));
+  navigator.geolocation.getCurrentPosition(p=>{state.origin=[p.coords.latitude,p.coords.longitude];state.originName='Ma position';
+    document.getElementById('originLabel').textContent='Ma position';recomputeDist();if(map){map.setView(state.origin,10);drawOrigin();}renderAll();},
+    ()=>alert('Impossible d\'obtenir votre position.'));
 };
 document.getElementById('setOriginBtn').onclick=()=>{
-  const v=prompt('Latitude, longitude du point de départ (ex : 48.51, -2.76) — ou laissez vide pour revenir à Plérin :', state.origin.join(', '));
-  if(v===null) return;
-  if(v.trim()===''){ state.origin=[48.5467,-2.7818]; state.originName='Plérin (22190)'; }
-  else{ const p=v.split(',').map(x=>parseFloat(x.trim())); if(p.length===2&&!isNaN(p[0])&&!isNaN(p[1])){state.origin=p;state.originName='Point personnalisé';}else{alert('Format invalide');return;} }
-  document.getElementById('originLabel').textContent=state.originName;
-  recomputeDist(); if(map){map.setView(state.origin,10);drawOrigin();} renderAll();
+  const v=prompt('Latitude, longitude (ex : 48.51, -2.76) — vide = Plérin :',state.origin.join(', '));
+  if(v===null)return;
+  if(v.trim()===''){state.origin=[48.5467,-2.7818];state.originName='Plérin (22190)';}
+  else{const p=v.split(',').map(x=>parseFloat(x.trim()));if(p.length===2&&!isNaN(p[0])&&!isNaN(p[1])){state.origin=p;state.originName='Point personnalisé';}else{alert('Format invalide');return;}}
+  document.getElementById('originLabel').textContent=state.originName;recomputeDist();if(map){map.setView(state.origin,10);drawOrigin();}renderAll();
 };
-
-// map day picker
-function availDates(){ return [...new Set(EVENTS.filter(e=>parseD(e.date)>=TODAY).map(e=>e.date))].sort(); }
-function setMapDay(d){
-  state.selDay=d||null;
-  const inp=document.getElementById('mapDay'); if(inp) inp.value=d||'';
-  updateSelDayBar(); renderAll();
-}
-document.getElementById('mapDay').onchange=e=>setMapDay(e.target.value||null);
-document.getElementById('mdAll').onclick=()=>setMapDay(null);
-document.getElementById('mdRoutes').onclick=()=>{ state.showRoutes=!state.showRoutes; drawRoutes(); };
-document.getElementById('mdPrev').onclick=()=>{ const ds=availDates(); if(!ds.length)return;
-  let i=state.selDay?ds.indexOf(state.selDay):0; if(i<0)i=0; i=Math.max(0,i-1); setMapDay(ds[i]); };
-document.getElementById('mdNext').onclick=()=>{ const ds=availDates(); if(!ds.length)return;
-  let i=state.selDay?ds.indexOf(state.selDay):-1; i=Math.min(ds.length-1,i+1); setMapDay(ds[i]); };
-
-// mobile filters
 document.getElementById('openFilters').onclick=()=>{document.getElementById('filters').classList.add('open');document.getElementById('backdrop').classList.add('show');};
 document.getElementById('backdrop').onclick=()=>{document.getElementById('filters').classList.remove('open');document.getElementById('backdrop').classList.remove('show');};
+window.addEventListener('resize',()=>{if(map)setTimeout(()=>map.invalidateSize(),100);});
 
-function buildDeps(){
-  const deps={};
-  EVENTS.forEach(e=>{ if(e.dep) deps[e.dep]=e.depname||e.dep; });
-  const keys=Object.keys(deps).sort();
-  const sel=document.getElementById('depSel');
-  if(keys.length>1){
-    document.getElementById('depGroup').style.display='';
-    sel.innerHTML='<option value="">Tous les départements</option>'+
-      keys.map(k=>'<option value="'+k+'">'+k+' — '+deps[k]+'</option>').join('');
-    sel.onchange=e=>{ state.dep=e.target.value; renderAll(); };
-  } else {
-    document.getElementById('depGroup').style.display='none';
-  }
-}
 async function boot(){
   try{
     const r=await fetch('./data.json',{cache:'no-store'});
-    if(r.ok){
-      const d=await r.json();
-      const arr=Array.isArray(d)?d:(d&&Array.isArray(d.events)?d.events:null);
-      if(arr&&arr.length){ EVENTS.length=0; arr.forEach(x=>EVENTS.push(x)); }
-      const gi=document.getElementById('genInfo');
-      if(gi&&d&&d.generated){ gi.textContent='Données mises à jour le '+d.generated+' · '+(arr?arr.length:0)+' événements.'; }
-    }
-  }catch(err){ /* mode fichier autonome : on garde les données embarquées */ }
-  recomputeDist();
-  buildDeps();
-  const ds=availDates(); const mi=document.getElementById('mapDay');
-  if(ds.length && mi){ mi.min=ds[0]; mi.max=ds[ds.length-1]; }
-  buildChips();
+    if(r.ok){const d=await r.json();const arr=Array.isArray(d)?d:(d&&Array.isArray(d.events)?d.events:null);
+      if(arr&&arr.length){EVENTS.length=0;arr.forEach(x=>EVENTS.push(x));}
+      const gi=document.getElementById('genInfo');if(gi&&d&&d.generated)gi.textContent='Données mises à jour le '+d.generated+' · '+(arr?arr.length:0)+' événements.';}
+  }catch(err){}
+  EVENTS.forEach((e,i)=>e._id=i);
+  recomputeDist();buildDeps();buildChips();
+  const ds=availDates();const mi=document.getElementById('mapDay');if(ds.length&&mi){mi.min=ds[0];mi.max=ds[ds.length-1];}
   renderAll();
+  if(map)setTimeout(()=>map.invalidateSize(),200);
 }
 boot();
 </script>
