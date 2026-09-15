@@ -44,14 +44,32 @@ from bs4 import BeautifulSoup
 BASE = "https://brocabrac.fr"
 GEO = "https://geo.api.gouv.fr"
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; BrocanteurBot/2.0; agregateur personnel de brocantes)",
-    "Accept-Language": "fr-FR,fr;q=0.9",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.6",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Sec-Fetch-User": "?1",
+    "Sec-Ch-Ua": '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+    "Sec-Ch-Ua-Mobile": "?0",
+    "Sec-Ch-Ua-Platform": '"Windows"',
+    "Connection": "keep-alive",
 }
 MONTH_SLUGS = ["janvier", "fevrier", "mars", "avril", "mai", "juin",
                "juillet", "aout", "septembre", "octobre", "novembre", "decembre"]
 
 session = requests.Session()
 session.headers.update(HEADERS)
+
+
+def warmup():
+    """Visite la page d'accueil pour récupérer d'éventuels cookies (anti-bot lé­ger)."""
+    try:
+        session.get(BASE + "/", timeout=25)
+    except requests.RequestException:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -248,6 +266,7 @@ def main():
     ap.add_argument("--out", type=str, default="data.json")
     ap.add_argument("--sleep", type=float, default=0.3)
     args = ap.parse_args()
+    warmup()
 
     months = month_horizon(args.months)
     print(f"Mois : {', '.join(months)}")
